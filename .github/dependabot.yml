@@ -1,0 +1,29 @@
+# Updates proposed once a release has been public for two weeks (cooldown):
+# long enough for a compromised release to be caught and pulled before it
+# reaches a fork. Minor and patch updates arrive together, one pull request
+# a week. A new major version of a package is never proposed: Next.js, React
+# and their types and lint rules move together, and the test runner's majors
+# change its configuration, so a major is an upgrade a person makes on
+# purpose, not a weekly pull request that fails on every fork.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 14
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 14

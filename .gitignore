@@ -1,0 +1,41 @@
+# dependencies
+/node_modules
+
+# next.js
+/.next/
+/out/
+next-env.d.ts
+*.tsbuildinfo
+
+# production
+/build
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# settings: never committed; .env.example lists them with placeholders
+.env*
+!.env.example
+
+# vercel
+.vercel
+
+# generated: QR codes (npm run qr) and the audits' screenshots (npm run
+# responsive), each redrawn whenever it is wanted. The slot list
+# (copy-keys.json, npm run copy) is generated too, but committed: the tests
+# hold it to what the pages read, and notion:seed-copy makes rows from it.
+qr/
+/audit/
+
+# operating systems
+.DS_Store
+
+# desloppify (npm run … audits): local state, never committed
+/.desloppify/
+.env
+
+# the feedback loop agent's hand-over (.github/workflows/feedback-loop.yml)
+/feedback-out/

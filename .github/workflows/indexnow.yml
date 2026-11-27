@@ -1,0 +1,52 @@
+# Tells IndexNow the site has changed (scripts/indexnow.mjs, lib/indexnow.ts):
+#
+# - once a production deployment is live, every page in the sitemap. Vercel
+#   reports each deployment to GitHub; this runs on the production ones that
+#   succeeded.
+# - every hour, the pages, posts and products edited in Notion in that hour
+#   (their dates in the sitemap are Notion's), so a post published between
+#   deployments reaches Bing, ChatGPT's search and Copilot the same hour.
+#   Only once the repository variable INDEXNOW_HOURLY is "true" (Settings,
+#   Secrets and variables, Actions, Variables), so a copy that does not use
+#   IndexNow spends no minutes on it.
+#
+# Neither does anything until the repository has two secrets: SITE_URL (the
+# live site) and INDEXNOW_KEY (the same key the site serves at
+# /indexnow.txt).
+name: IndexNow
+
+on:
+  deployment_status:
+  schedule:
+    # 17 minutes past every hour
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: indexnow-${{ github.event_name }}
+  cancel-in-progress: true
+
+jobs:
+  submit:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'schedule' && vars.INDEXNOW_HOURLY == 'true') ||
+      (github.event_name == 'deployment_status' &&
+       github.event.deployment_status.state == 'success' &&
+       github.event.deployment.environment == 'Production')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      # the hour's edits, with ten minutes over so an edit at the turn of
+      # the hour is not missed; after a deployment, every page
+      - run: node scripts/indexnow.mjs ${{ github.event_name == 'schedule' && '--changed-within 70' || '' }}
+        env:
+          SITE_URL: ${{ secrets.SITE_URL }}
+          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}

@@ -1,0 +1,169 @@
+# The feedback loop's agent (docs/feedback.md): every weekday morning, and
+# whenever it is run by hand, Claude Code reads what readers sent from the
+# site's Feedback button (the "Site feedback" survey in PostHog), watches the
+# recordings and errors behind it, and makes one branch and one draft pull
+# request per problem it can fix (.claude/skills/feedback-triage/SKILL.md).
+#
+# Anybody can send feedback, so the agent works as if a stranger were at its
+# keyboard, and the loop is two jobs:
+#
+# - triage: the agent. It can read the repository and PostHog, run the
+#   checks, and commit, and that is all: its GitHub token reads, nothing it
+#   makes leaves the job but files, and the keys that write are not in it.
+# - open: no agent, and none of its keys. It takes those files as data, holds
+#   each branch to lib/feedback-pulls.ts (new, from this run's commit, and
+#   clear of the workflows, the playbook, vercel.json and the packages), and
+#   pushes it and opens its draft (scripts/feedback-open.mjs). It never
+#   merges, never pushes over a branch, and never pushes to the default one.
+#
+# It does nothing until the repository has two secrets (Settings, Secrets and
+# variables, Actions): POSTHOG_PERSONAL_API_KEY (a key of its own, with read
+# on surveys, session recordings, error tracking and queries, and nothing
+# else), and either ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN. A copy
+# without them skips the run.
+#
+# GitHub stops a workflow's own token from opening pull requests in a new
+# repository. Either allow it (Settings, Actions, General, Workflow
+# permissions: "Allow GitHub Actions to create and approve pull requests"),
+# or add a FEEDBACK_GH_TOKEN secret: a fine-grained token on this repository
+# with write on contents, pull requests and issues, which also lets CI run
+# on the drafts it opens. Only the open job sees it.
+name: Feedback loop
+
+on:
+  schedule:
+    # 07:23 UTC, Monday to Friday
+    - cron: "23 7 * * 1-5"
+  workflow_dispatch:
+
+# nothing by default: each job names what it needs
+permissions: {}
+
+concurrency:
+  group: feedback-loop
+  cancel-in-progress: false
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: read
+      # the Claude Code action exchanges it, even with a token of our own
+      id-token: write
+    outputs:
+      made: ${{ steps.made.outputs.made }}
+    steps:
+      - name: Is the loop set up?
+        id: ready
+        env:
+          POSTHOG_PERSONAL_API_KEY: ${{ secrets.POSTHOG_PERSONAL_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          if [ -n "$POSTHOG_PERSONAL_API_KEY" ] && { [ -n "$ANTHROPIC_API_KEY" ] || [ -n "$CLAUDE_CODE_OAUTH_TOKEN" ]; }; then
+            echo "on=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "on=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::The feedback loop is not set up: add POSTHOG_PERSONAL_API_KEY and ANTHROPIC_API_KEY (or CLAUDE_CODE_OAUTH_TOKEN) as repository secrets (docs/feedback.md)."
+          fi
+
+      - if: steps.ready.outputs.on == 'true'
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - if: steps.ready.outputs.on == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - if: steps.ready.outputs.on == 'true'
+        run: npm ci
+
+      # The PostHog MCP server, with the personal key written in here rather
+      # than left to the config's own variable expansion. The agent can read
+      # this file, which is why the key may only read.
+      - name: PostHog for Claude
+        if: steps.ready.outputs.on == 'true'
+        env:
+          POSTHOG_PERSONAL_API_KEY: ${{ secrets.POSTHOG_PERSONAL_API_KEY }}
+        run: |
+          jq -n --arg key "$POSTHOG_PERSONAL_API_KEY" \
+            '{mcpServers: {posthog: {type: "http", url: "https://mcp.posthog.com/mcp", headers: {Authorization: ("Bearer " + $key)}}}}' \
+            > "$RUNNER_TEMP/posthog-mcp.json"
+
+      - name: Triage the feedback
+        if: steps.ready.outputs.on == 'true'
+        uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ github.token }}
+        with:
+          # this job's own token, which reads: what the agent makes leaves as files
+          github_token: ${{ github.token }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: "/feedback-triage"
+          claude_args: >-
+            --max-turns 80
+            --permission-mode dontAsk
+            --mcp-config ${{ runner.temp }}/posthog-mcp.json
+            --allowedTools "Read,Edit,Write,Glob,Grep,Bash(npm run check),Bash(npm run lint),Bash(npm run typecheck),Bash(npm run copy),Bash(npm run docs),Bash(npm run dev),Bash(npm test *),Bash(npx vitest *),Bash(git checkout -b *),Bash(git switch *),Bash(git add *),Bash(git commit *),Bash(git fetch origin *),Bash(git status *),Bash(git diff *),Bash(git log *),Bash(gh search *),Bash(gh pr list *),Bash(gh issue list *),mcp__posthog__exec,mcp__posthog__surveys-get-all,mcp__posthog__survey-get,mcp__posthog__surveys-responses-list,mcp__posthog__survey-stats,mcp__posthog__session-recording-get,mcp__posthog__query-session-recordings-list,mcp__posthog__query-error-tracking-issues-list,mcp__posthog__query-error-tracking-issue,mcp__posthog__query-error-tracking-issue-events,mcp__posthog__execute-sql,mcp__posthog__read-data-schema"
+
+      # The agent's branches as a bundle beside its pull requests' words, for
+      # the open job to check. Nothing here is trusted there.
+      - name: Hand over what it made
+        id: made
+        if: steps.ready.outputs.on == 'true'
+        run: |
+          mkdir -p feedback-out
+          branches=$(git for-each-ref --format='%(refname)' refs/heads/feedback/)
+          if [ -n "$branches" ]; then
+            git bundle create feedback-out/branches.bundle $branches --not "$GITHUB_SHA" || echo "::notice::No feedback branch has a commit of its own."
+          fi
+          if [ -n "$(find feedback-out -name '*.md' -print -quit)" ]; then
+            echo "made=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "made=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - if: steps.made.outputs.made == 'true'
+        uses: actions/upload-artifact@v5
+        with:
+          name: feedback-out
+          path: feedback-out/
+          retention-days: 3
+          if-no-files-found: error
+
+  open:
+    needs: triage
+    if: needs.triage.outputs.made == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.FEEDBACK_GH_TOKEN || github.token }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      # outside the checkout: nothing in it is ever run
+      - uses: actions/download-artifact@v5
+        with:
+          name: feedback-out
+          path: ${{ runner.temp }}/feedback-out
+
+      - name: Open the drafts
+        env:
+          GH_TOKEN: ${{ secrets.FEEDBACK_GH_TOKEN || github.token }}
+        run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./tests/register-ts.mjs scripts/feedback-open.mjs "$RUNNER_TEMP/feedback-out"
