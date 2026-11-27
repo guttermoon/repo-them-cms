@@ -462,15 +462,19 @@ blanked from the database. The MIT licence does let you take it out of the
 code; please keep the credit, or link back to [denot.app](https://denot.app)
 somewhere else on your site. It's how the next person finds the template.
 
-- **The code:** MIT, in [LICENSE](LICENSE).
+- **The code:** MIT, in [LICENSE](LICENSE), except what follows, which
+  keeps its own terms.
 - **The fonts:** Roboto Slab (Apache 2.0), and Inter, Source Serif 4 and IBM
-  Plex Mono (SIL Open Font Licence). Their licences are in `assets/fonts`.
+  Plex Mono (SIL Open Font Licence). Their licences are beside them, in
+  `assets/fonts`.
 - **The icons:** [Phosphor](https://phosphoricons.com) (MIT), its notice in
   `lib/icons.ts`.
 - **The tool marks:** [Simple Icons](https://simpleicons.org) (CC0). Each
   mark is its owner's trademark, used only to say the site works with it.
+- **The "Made for Notion" badge** in `public/brand`: Notion Labs, Inc.'s,
+  unaltered, used as Notion's brand guidelines describe
+  ([docs/brand.md](docs/brand.md)), and not under the MIT licence.
 
 REPO THEM is an independent template, not made, endorsed or maintained by
 Notion Labs, Inc. Notion and the Notion logo are trademarks of Notion Labs,
-Inc. The "Made for Notion" badge is used as Notion's brand guidelines
-describe ([docs/brand.md](docs/brand.md)).
+Inc.

@@ -47,6 +47,16 @@ in `next.config.mjs`.
   - **Why:** the credit is how the next person finds the template. MIT lets
     a copy remove it from the code, so it can only be asked for, but it
     should never be one unticked row away.
+- **The rule:** `LICENSE` is MIT's text alone, under one copyright line that
+  names the template as the footer does ("REPO THEM a GitHub template by
+  Denot"). What MIT doesn't cover (the fonts, the icons, the tool marks,
+  Notion's badge) is said under the README's "Credits and licence", and each
+  font's licence sits beside it in `assets/fonts`.
+  `tests/licence.test.mjs` holds this.
+  - **Why:** GitHub names a repository's licence only when the file is a
+    licence's own text. With a note under it, the repository showed no
+    licence at all, and a template that doesn't show it is MIT is one a
+    careful person doesn't fork.
 - **The rule:** the service counter (`components/sections/service-counter.tsx`)
   sits above the footer on every page but `/features`, which places its own
   above the services in full (`ExceptOn` in the layout). Every one of the

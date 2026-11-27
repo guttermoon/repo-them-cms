@@ -19,9 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-The fonts in assets/fonts are not covered by this licence: each comes with
-its own (Roboto Slab under the Apache License 2.0; Inter, Source Serif 4 and
-IBM Plex Mono under the SIL Open Font License 1.1), in the same folder. The
-"Made for Notion" badge in public/brand is Notion Labs, Inc.'s, used under its
-brand guidelines, and is not covered by this licence either.
