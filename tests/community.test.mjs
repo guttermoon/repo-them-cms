@@ -11,7 +11,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs"
 import { createRequire } from "node:module"
 import { join } from "node:path"
 
-import { MAKER, REPO_URL } from "../lib/site.ts"
+import { DEMO_URL, MAKER, REPO_URL } from "../lib/site.ts"
 import { ROOT } from "./support/sources.mjs"
 
 const sharp = createRequire(import.meta.url)("sharp")
@@ -22,10 +22,10 @@ const FORMS = readdirSync(join(ROOT, FORMS_DIR))
   .map((f) => `${FORMS_DIR}/${f}`)
 
 /** The files a person reads on the repository's page, each in the template's own words. */
-const PAGE = ["CONTRIBUTING.md", "SUPPORT.md", "SECURITY.md", ".github/pull_request_template.md", `${FORMS_DIR}/config.yml`, ...FORMS]
+const PAGE = ["CONTRIBUTING.md", "SUPPORT.md", "SECURITY.md", ".github/pull_request_template.md", ".github/FUNDING.yml", `${FORMS_DIR}/config.yml`, ...FORMS]
 
 test("every file GitHub's community profile looks for is there", () => {
-  for (const file of ["README.md", "LICENSE", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md", "SECURITY.md", "SUPPORT.md", ".github/pull_request_template.md", `${FORMS_DIR}/config.yml`]) {
+  for (const file of ["README.md", "LICENSE", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md", "SECURITY.md", "SUPPORT.md", ".github/pull_request_template.md", ".github/FUNDING.yml", `${FORMS_DIR}/config.yml`]) {
     assert.ok(existsSync(join(ROOT, file)), `${file} is missing`)
   }
   assert.ok(FORMS.length >= 2, "a bug form and an idea form")
@@ -37,6 +37,20 @@ test("the README sends contributors, help-seekers and reporters to their files",
   const badge = `[![CI](${REPO_URL}/actions/workflows/ci.yml/badge.svg)](${REPO_URL}/actions/workflows/ci.yml)`
   assert.ok(readme.includes(badge), "the README shows CI's status, from this repository's own workflow")
   assert.ok(existsSync(join(ROOT, ".github/workflows/ci.yml")))
+})
+
+test("the README opens on the live demo, and its first picture goes there", () => {
+  assert.match(DEMO_URL, /^https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)+$/, "the demo is a bare https origin")
+  const readme = read("README.md")
+  const opening = readme.split(/^## /m)[0]
+  assert.ok(opening.includes(`[see it live](${DEMO_URL})`), "the opening lines link the demo")
+  assert.match(opening, new RegExp(`<a href="${DEMO_URL.replace(/[.]/g, "\\.")}"><picture>`), "the first picture is a link to the demo")
+})
+
+test("the Sponsor button sends people to the maker and nowhere else", () => {
+  const funding = read(".github/FUNDING.yml")
+  const entries = funding.split("\n").filter((line) => line.trim() && !line.trimStart().startsWith("#"))
+  assert.deepEqual(entries, [`custom: ["${MAKER.url}"]`])
 })
 
 test("the code of conduct is the Contributor Covenant 2.1, with somewhere to report", () => {

@@ -1,0 +1,5 @@
+# The repository's Sponsor button, shown once Settings → General → Features
+# → Sponsorships is ticked. It sends people to the maker, as the footer's
+# credit does. A copy of the template carries this file, but shows no button
+# unless its own owner ticks Sponsorships (docs/development.md).
+custom: ["https://denot.app"]

@@ -188,7 +188,7 @@ What GitHub shows a stranger before a line of code:
 
 | File | What it is |
 |---|---|
-| `README.md` | The front page. Its pictures are in `docs/images` |
+| `README.md` | The front page: it opens on the live demo (`DEMO_URL` in `lib/site.ts`), and its pictures are in `docs/images` |
 | `CONTRIBUTING.md` | How to propose a change, and the rules a change meets most |
 | `CODE_OF_CONDUCT.md` | The Contributor Covenant 2.1, with the maker's address for reports |
 | `SUPPORT.md` | Where to ask for help, and where not to |
@@ -196,6 +196,7 @@ What GitHub shows a stranger before a line of code:
 | `.github/ISSUE_TEMPLATE/` | The bug and idea forms, and the links the issue chooser offers beside them |
 | `.github/pull_request_template.md` | The checklist a pull request opens with |
 | `.github/social-preview.png` | The card shown wherever the repository's address is shared |
+| `.github/FUNDING.yml` | The Sponsor button, to the maker's site. It shows once **Settings → General → Features → Sponsorships** is ticked |
 
 The README's pictures and the social preview are drawn from a running site,
 at twice the size they're shown:

@@ -18,7 +18,7 @@ import { existsSync, readFileSync, statSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 
-import { MAKER } from "../lib/site.ts"
+import { DEMO_URL, MAKER } from "../lib/site.ts"
 
 const ROOT = fileURLToPath(new URL("../", import.meta.url))
 const BINARY = /\.(png|jpe?g|gif|webp|avif|ico|woff2?|ttf|otf|pdf|zip|gz|mp4|mp3)$/i
@@ -105,8 +105,9 @@ test("no real-looking Notion ID: only made-up ones and public pages", () => {
   assert.deepEqual(found, [])
 })
 
-test("no deployment's own address: hosts come from the environment", () => {
-  const found = scan(/\b[a-z0-9-]+\.vercel\.app\b/gi, (host) => /^(your|my|example|project|site)[a-z0-9-]*\.vercel\.app$/i.test(host))
+test("no deployment's own address but the public demo's: hosts come from the environment", () => {
+  const demo = new URL(DEMO_URL).host
+  const found = scan(/\b[a-z0-9-]+\.vercel\.app\b/gi, (host) => host.toLowerCase() === demo || /^(your|my|example|project|site)[a-z0-9-]*\.vercel\.app$/i.test(host))
   assert.deepEqual(found, [])
 })
 

@@ -85,6 +85,15 @@ export const VERCEL_IMPORT_URL = "https://vercel.com/new"
  */
 export const NOTION_TEMPLATE_URL = "https://www.notion.so/4236f6ccb2c18175b890e03e8f6ca2a8"
 
+/**
+ * The template's own live demo: this code, connected to the demo's
+ * database, for the README to link. The one deployment's address the
+ * repository names, public on purpose (tests/no-secrets.test.mjs allows it
+ * and no other). The site never prints it: a copy's own address is its
+ * SITE_URL.
+ */
+export const DEMO_URL = "https://repo-them.vercel.app"
+
 /** The two settings the Deploy button asks for: the only ones a site needs.
  *  Vercel makes every setting the button names required, so anything
  *  optional is left to the project's settings afterwards. */

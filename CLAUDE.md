@@ -57,17 +57,19 @@ in `next.config.mjs`.
     licence's own text. With a note under it, the repository showed no
     licence at all, and a template that doesn't show it is MIT is one a
     careful person doesn't fork.
-- **The rule:** the repository's own page is whole: the README opens on
-  the site itself (light or dark, as GitHub's reader has it) and shows the
-  four looks, CONTRIBUTING, CODE_OF_CONDUCT (the Contributor Covenant
-  2.1), SUPPORT and SECURITY are beside it, the issue forms send security
-  to the policy and paid help to the maker, the pull request form is the
-  checklist, and `package.json` names the repository and is never
-  published. Each names `REPO_URL` and the maker's public address and no
-  other. The pictures and the social preview are drawn from a running site
-  at twice their size (`npm run readme-images`); GitHub takes the preview
-  only as an upload. `tests/community.test.mjs` holds this
-  (`docs/development.md`, "The repository's own page").
+- **The rule:** the repository's own page is whole. The README opens on
+  the live demo (`DEMO_URL`), with a picture of it (light or dark, as
+  GitHub's reader has it) that links there, and shows the four looks.
+  CONTRIBUTING, CODE_OF_CONDUCT (the Contributor Covenant 2.1), SUPPORT
+  and SECURITY sit beside it. The issue forms send security to the policy
+  and paid help to the maker, the pull request form is the checklist, the
+  Sponsor button (`.github/FUNDING.yml`) goes to the maker, and
+  `package.json` names the repository and is never published. Each names
+  `REPO_URL` and the maker's public address and no other. The pictures
+  and the social preview are drawn from a running site at twice their size
+  (`npm run readme-images`); GitHub takes the preview only as an upload.
+  `tests/community.test.mjs` holds this (`docs/development.md`, "The
+  repository's own page").
   - **Why:** a stranger decides whether to fork from the repository's page
     before reading a line of code, a report arrives in the shape the page
     asked for, and an issue form GitHub can't read is dropped from the
@@ -799,9 +801,12 @@ in `next.config.mjs`.
 - **The rule:** `tests/no-secrets.test.mjs` reads every file git would
   commit. It fails on an email address other than the maker's public one or
   an example, a token shape, an analytics ID, a real-looking Notion ID, or a
-  deployment's address.
+  deployment's address. Two are public on purpose and named once in
+  `lib/site.ts`: the Notion template (`NOTION_TEMPLATE_URL`) and the live
+  demo (`DEMO_URL`), which only the README links.
   - **Why:** use example domains (`example.com`, `.example`) and
-    placeholder IDs in tests.
+    placeholder IDs in tests. A copy's own address is its `SITE_URL`, never
+    the code's, so the site never prints the demo's.
 - **The rule:** a link to another site opens in a new tab, with
   `rel="noopener noreferrer"`; a path, an anchor, mail, a phone number and
   the site's own address stay in the tab. Every link drawn from an address
