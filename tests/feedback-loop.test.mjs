@@ -79,7 +79,7 @@ test("the agent may edit, run the checks, commit and read; it can push, open and
 
 test("what the agent made leaves its job as files, and the open job opens it with nothing of the agent's", () => {
   assert.match(triage, /git bundle create feedback-out\/branches\.bundle \$branches --not "\$GITHUB_SHA"/)
-  assert.match(triage, /actions\/upload-artifact@v\d+/)
+  assert.match(triage, /actions\/upload-artifact@[0-9a-f]{40} # v\d+/)
   for (const secret of ["ANTHROPIC_API_KEY", "CLAUDE_CODE_OAUTH_TOKEN", "POSTHOG_PERSONAL_API_KEY"]) assert.doesNotMatch(open, new RegExp(secret))
   assert.doesNotMatch(open, /npm (ci|install|run)|claude-code-action/, "the open job installs and runs nothing of the branches'")
   assert.match(open, /path: \$\{\{ runner\.temp \}\}\/feedback-out/, "the artifact lands outside the checkout")

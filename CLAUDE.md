@@ -158,6 +158,12 @@ in `next.config.mjs`.
   - **Why:** anybody can send feedback, and PostHog's project key is
     public: a sentence in a response is all it takes to ask the agent for
     anything, so what a persuaded agent can reach is kept to what it needs.
+- **The rule:** every GitHub Action a workflow uses is pinned to a commit,
+  its version in a comment beside it (`actions/checkout@<commit> # v7.0.1`),
+  and Dependabot moves both. `tests/workflows.test.mjs` holds this.
+  - **Why:** a tag can be moved to other code by whoever holds the action's
+    repository, and the next run would take it; the feedback loop's runs
+    with the Anthropic key in reach.
 - **The rule:** every feature flag the code reads is in `FLAGS`
   (`lib/flags.ts`) with a fallback, and is read with `useFlag`. PostHog is
   asked only after a yes; everybody else gets the fallback, so the fallback
