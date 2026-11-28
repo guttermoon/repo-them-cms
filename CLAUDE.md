@@ -57,6 +57,21 @@ in `next.config.mjs`.
     licence's own text. With a note under it, the repository showed no
     licence at all, and a template that doesn't show it is MIT is one a
     careful person doesn't fork.
+- **The rule:** the repository's own page is whole: the README opens on
+  the site itself (light or dark, as GitHub's reader has it) and shows the
+  four looks, CONTRIBUTING, CODE_OF_CONDUCT (the Contributor Covenant
+  2.1), SUPPORT and SECURITY are beside it, the issue forms send security
+  to the policy and paid help to the maker, the pull request form is the
+  checklist, and `package.json` names the repository and is never
+  published. Each names `REPO_URL` and the maker's public address and no
+  other. The pictures and the social preview are drawn from a running site
+  at twice their size (`npm run readme-images`); GitHub takes the preview
+  only as an upload. `tests/community.test.mjs` holds this
+  (`docs/development.md`, "The repository's own page").
+  - **Why:** a stranger decides whether to fork from the repository's page
+    before reading a line of code, a report arrives in the shape the page
+    asked for, and an issue form GitHub can't read is dropped from the
+    chooser without a word.
 - **The rule:** the service counter (`components/sections/service-counter.tsx`)
   sits above the footer on every page but `/features`, which places its own
   above the services in full (`ExceptOn` in the layout). Every one of the
