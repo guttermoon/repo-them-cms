@@ -332,6 +332,45 @@ export function urlOf(row: NotionRow, name: string): string | undefined {
   return raw?.trim() || undefined
 }
 
+/**
+ * A file's version, for its address on this site (lib/content/media.ts),
+ * which browsers and the CDN keep for a year: it changes when the file does,
+ * and only then. Notion's address for a file it hosts keeps its path (the
+ * workspace, the file's own id, its name) and changes only its signature,
+ * hourly; an outside file's address is the file. So the version is a hash
+ * of the host and the path, and the row's or block's last edit only where
+ * there is no address to read. An edit to a post's words then leaves its
+ * pictures' addresses, and every cache of them, as they were.
+ */
+export function fileVersion(url: string | undefined, fallback: string): string {
+  if (!url) return fallback
+  let where: string
+  try {
+    const parsed = new URL(url)
+    where = `${parsed.host}${parsed.pathname}`
+  } catch {
+    return fallback
+  }
+  // FNV-1a from two starting points: 64 bits, as 16 hex characters
+  let a = 0x811c9dc5
+  let b = 0x050c5d1f
+  for (let i = 0; i < where.length; i++) {
+    const c = where.charCodeAt(i)
+    a = Math.imul(a ^ c, 0x01000193) >>> 0
+    b = Math.imul(b ^ c, 0x01000193) >>> 0
+  }
+  return a.toString(16).padStart(8, "0") + b.toString(16).padStart(8, "0")
+}
+
+/** The address of the file an icon shows, where Notion gives one. */
+export function iconFileUrl(icon: IconValue | null | undefined): string | undefined {
+  if (!icon) return undefined
+  if (icon.type === "file" && "file" in icon) return icon.file?.url
+  if (icon.type === "custom_emoji" && "custom_emoji" in icon) return icon.custom_emoji?.url
+  if (icon.type === "external" && "external" in icon) return icon.external?.url
+  return undefined
+}
+
 /** A files property's files as media references, in order. */
 export function filesOf(row: NotionRow, name: string): MediaRef[] {
   // the name the database has it under, which the media route asks Notion for
@@ -348,7 +387,7 @@ export function filesOf(row: NotionRow, name: string): MediaRef[] {
         field: "prop" as const,
         prop: named,
         index,
-        v: row.last_edited_time ?? "",
+        v: fileVersion(external ?? f.file?.url, row.last_edited_time ?? ""),
         ...(external ? { external } : {}),
         ...(f.name ? { name: f.name } : {}),
       },
@@ -362,9 +401,9 @@ function pageCoverOf(row: NotionRow): MediaRef | undefined {
   if (!cover || !row.id) return undefined
   if (cover.type === "external") {
     const url = cover.external?.url?.trim()
-    return url ? { owner: "page", id: row.id, field: "cover", v: row.last_edited_time ?? "", external: url } : undefined
+    return url ? { owner: "page", id: row.id, field: "cover", v: fileVersion(url, row.last_edited_time ?? ""), external: url } : undefined
   }
-  if (cover.type === "file") return { owner: "page", id: row.id, field: "cover", v: row.last_edited_time ?? "" }
+  if (cover.type === "file") return { owner: "page", id: row.id, field: "cover", v: fileVersion(cover.file?.url, row.last_edited_time ?? "") }
   return undefined
 }
 
@@ -399,11 +438,12 @@ function coverTintOf(row: NotionRow): boolean {
 function iconOf(row: NotionRow): Icon | undefined {
   if (!row.id) return undefined
   const id = row.id
-  return iconFrom(row.icon as IconValue | null | undefined, (external) => ({
+  const icon = row.icon as IconValue | null | undefined
+  return iconFrom(icon, (external) => ({
     owner: "page",
     id,
     field: "icon",
-    v: row.last_edited_time ?? "",
+    v: fileVersion(external ?? iconFileUrl(icon), row.last_edited_time ?? ""),
     ...(external ? { external } : {}),
   }))
 }

@@ -73,8 +73,19 @@ WebP at that width, cached for a year like the original.
 - A box that crops (`object-cover` in a square) is filled by the picture's
   shorter side, so ask for more than the box is wide: twice for an avatar,
   half as much again in `sizes`.
-- `{ eager: true }` is for the one picture a page opens on. Every other
-  loads as it nears the screen.
+- `{ eager: true }` is for the one picture a page opens on (a cover, the
+  blog's lead post): it is fetched with the page and before anything else
+  on it (`fetchpriority="high"`). Every other loads as it nears the screen.
+  `checkPictures` allows one such picture a page.
+- A picture's address names its file, not the row's last edit
+  (`fileVersion` in `lib/notion/rows.ts`): Notion's address for a file it
+  hosts keeps its path and changes only its hourly signature, so the path
+  is hashed into the address. An edit to a post's words leaves its
+  pictures' addresses, and every cache of them, as they were; a new upload
+  is a new address. Where there is no address to read, the last edit
+  stands in, as before. The media route still asks Notion once per page,
+  whatever its pictures' versions, and asks afresh, once, for a picture
+  whose version its kept answer doesn't have (one uploaded since).
 - An SVG, a GIF and anything that moves are sent as they were uploaded. So
   are the starter's own pictures in `public/demo`, which are already the
   size they're shown.

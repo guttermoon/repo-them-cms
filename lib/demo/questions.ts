@@ -187,5 +187,19 @@ export const TEMPLATE_GROUP: Group = {
       q: "Where do I report a bug?",
       a: ["Open an issue on the repository. Security problems: see the security policy in the repository, and please do not post them publicly."],
     },
+    {
+      q: "Why does a picture take a moment the first time?",
+      a: [
+        "Each picture from Notion is fetched, made the size it is shown at, and kept for a year, by the reader's browser and by your host's network. The first person to see a picture at a size waits while that happens; everyone after gets the kept copy at once.",
+        "A picture keeps its address until you upload a new one, so editing a post's words keeps its pictures quick. After a new deploy, the first visit to each picture can be slow again.",
+      ],
+    },
+    {
+      q: "Why doesn't the support chat show on phones?",
+      a: [
+        "PostHog's support chat shows on screens 1,024 pixels wide and up, where the header shows its links. On a phone or a tablet its button and window would sit over the page, so the site doesn't load it there at all.",
+        "The Feedback button and the contact page are there on every screen.",
+      ],
+    },
   ],
 }

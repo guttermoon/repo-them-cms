@@ -6,7 +6,7 @@ import { FRESH_MS, stillFresh, verifyMedia } from "@/lib/content/media"
 import { MAX_RESIZE_BYTES, RESIZABLE, resized, sourceAt, squareIcon } from "@/lib/content/media-resize"
 import { iconSize, mediaWidth } from "@/lib/media-sizes"
 import { retrieveBlock, retrievePage } from "@/lib/notion/client"
-import type { MediaRef } from "@/lib/notion/rows"
+import { fileVersion, type MediaRef } from "@/lib/notion/rows"
 import { otherName } from "@/lib/notion/schema"
 import { fetchPublic } from "@/lib/outbound"
 import { pickHeaders, standIn } from "@/lib/proxy"
@@ -30,7 +30,8 @@ export const dynamic = "force-dynamic"
  *
  * Notion is asked once per page or block, not once per picture: one answer
  * holds the address of every file the page has (its cover, its icon, its
- * gallery), is shared by requests that arrive together, and is used for 50
+ * gallery), whatever each one's version, is shared by requests that arrive
+ * together, and is used for 50
  * minutes of Notion's hour and never longer, nor past the minute before the
  * soonest `expiry_time` Notion gave with it. A file host that refuses an
  * address anyway (Notion's says 403 once one has expired), or can't be
@@ -104,7 +105,8 @@ const ownerTag = (ref: MediaRef) => `media-owner:${ref.owner}:${ref.id}`
  * next request keeps the new. `fresh` skips the kept answer outright.
  */
 function cachedOwnerFiles(ref: MediaRef, fresh = false): Promise<OwnerFiles> {
-  const key = `${ref.owner}:${ref.id}:${ref.v}${fresh ? ":fresh" : ""}`
+  // one answer for all of an owner's files, whatever each one's version
+  const key = `${ref.owner}:${ref.id}${fresh ? ":fresh" : ""}`
   let pending = asking.get(key)
   if (!pending) {
     // an answer asked for in this request is used whatever its expiry:
@@ -121,7 +123,7 @@ function cachedOwnerFiles(ref: MediaRef, fresh = false): Promise<OwnerFiles> {
     pending = (
       fresh
         ? now()
-        : unstable_cache(ask, ["media-owner-v3", ref.owner, ref.id, ref.v], { revalidate: FRESH_MS / 1000, tags: [ownerTag(ref)] })().then((kept) =>
+        : unstable_cache(ask, ["media-owner-v4", ref.owner, ref.id], { revalidate: FRESH_MS / 1000, tags: [ownerTag(ref)] })().then((kept) =>
             asked || stillFresh(kept.at, kept.files.until) ? kept.files : now(),
           )
     ).finally(() => asking.delete(key))
@@ -130,11 +132,8 @@ function cachedOwnerFiles(ref: MediaRef, fresh = false): Promise<OwnerFiles> {
   return pending
 }
 
-/** Where the file is right now; `fresh`: as Notion says this moment. */
-async function upstreamFor(ref: MediaRef, fresh = false): Promise<string | undefined> {
-  if (ref.external) return ref.external
-  if (!notionConfigured()) return undefined
-  const files = await cachedOwnerFiles(ref, fresh)
+/** The file a reference names among its owner's. */
+function fileIn(files: OwnerFiles, ref: MediaRef): string | undefined {
   if (ref.field === "icon") return files.icon
   if (ref.owner === "block") return files.file
   if (ref.field === "cover") return files.cover
@@ -142,6 +141,27 @@ async function upstreamFor(ref: MediaRef, fresh = false): Promise<string | undef
   // Notion (FORMER_NAMES) still finds its file after
   if (ref.field === "prop" && ref.prop) return (files.props?.[ref.prop] ?? files.props?.[otherName(ref.prop)])?.[ref.index ?? 0]
   return undefined
+}
+
+/** A version made from a file's address (fileVersion), as opposed to the
+ *  last edit that stands in where there was none to read. */
+const FILE_VERSION = /^[0-9a-f]{16}$/
+
+/**
+ * Where the file is right now; `fresh`: as Notion says this moment.
+ *
+ * The kept answer is the owner's, for all its files, and an address names
+ * its own file's version. So a file replaced since the answer was kept (a
+ * new cover, uploaded a minute ago) is told apart by its version, and
+ * Notion is asked as it is now, once: the new address is never answered
+ * with the old picture, which every cache would then keep for a year.
+ */
+async function upstreamFor(ref: MediaRef, fresh = false): Promise<string | undefined> {
+  if (ref.external) return ref.external
+  if (!notionConfigured()) return undefined
+  const url = fileIn(await cachedOwnerFiles(ref, fresh), ref)
+  if (!fresh && url && FILE_VERSION.test(ref.v) && fileVersion(url, "") !== ref.v) return fileIn(await cachedOwnerFiles(ref, true), ref)
+  return url
 }
 
 /** Whether a file host's answer is worth one more try: it could not be

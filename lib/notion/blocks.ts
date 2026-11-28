@@ -8,7 +8,7 @@
  * (tests/notion-blocks.test.mjs).
  */
 import { cutAtWord } from "../page-meta"
-import type { MediaRef, RichRun } from "./rows"
+import { fileVersion, type MediaRef, type RichRun } from "./rows"
 
 /** One block, with the fields the renderer reads and its children inline. */
 export type NBlock = {
@@ -63,7 +63,8 @@ function trim(raw: RawBlock): NBlock | null {
       owner: "block",
       id,
       field: "block",
-      v: raw.last_edited_time ?? "",
+      // the file's own version, so a caption edited leaves its address
+      v: fileVersion(external ?? (payload.file as { url?: string } | undefined)?.url, raw.last_edited_time ?? ""),
       ...(external ? { external } : {}),
       ...(typeof payload.name === "string" && payload.name ? { name: payload.name } : {}),
     }

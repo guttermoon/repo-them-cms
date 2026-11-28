@@ -19,7 +19,8 @@ import { picture } from "@/lib/media-sizes"
  * page: the cover on top (or a plain label when there is none), then the
  * title and its properties.
  */
-export function PostCard({ post, label, large = false, headingLevel = 3 }: { post: Entry; label: string; large?: boolean; headingLevel?: 2 | 3 }) {
+/** `eager`: the card a page opens on, its cover fetched with the page. */
+export function PostCard({ post, label, large = false, eager = false, headingLevel = 3 }: { post: Entry; label: string; large?: boolean; eager?: boolean; headingLevel?: 2 | 3 }) {
   const H = headingLevel === 2 ? "h2" : "h3"
   return (
     <article className="lit group flex h-full flex-col overflow-hidden rounded-card border border-line bg-card">
@@ -28,7 +29,7 @@ export function PostCard({ post, label, large = false, headingLevel = 3 }: { pos
           // printed in the look's own ink, unless Cover Tint is Off (lib/cover.ts)
           <div {...coverFrame(post.coverTint, "aspect-[5/2] w-full overflow-hidden border-b border-line")}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img {...picture(mediaUrl(post.cover, "cover"), "(min-width: 1024px) 50vw, 100vw")} alt="" style={coverStyle(post.coverAt)} className="h-full w-full object-cover" />
+            <img {...picture(mediaUrl(post.cover, "cover"), "(min-width: 1024px) 50vw, 100vw", { eager })} alt="" style={coverStyle(post.coverAt)} className="h-full w-full object-cover" />
           </div>
         ) : (
           <div aria-hidden="true" className="flex aspect-[5/2] w-full items-end border-b border-line bg-wash p-4">
@@ -81,7 +82,8 @@ export function PostGallery({
   const item = (post: Entry, card: React.ReactNode) => (search ? <SearchItem key={post.id} text={postText(post)}>{card}</SearchItem> : card)
   const gallery = (
     <div className="space-y-5">
-      {lead ? item(first, <PostCard post={first} label={label} large headingLevel={headingLevel} />) : null}
+      {/* the lead post is what the blog opens on: its cover comes with the page */}
+      {lead ? item(first, <PostCard post={first} label={label} large eager headingLevel={headingLevel} />) : null}
       <div className="arrive-each grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {(lead ? rest : posts).map((post) => item(post, <PostCard key={post.id} post={post} label={label} headingLevel={headingLevel} />))}
       </div>

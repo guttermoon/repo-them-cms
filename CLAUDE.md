@@ -438,12 +438,16 @@ in `next.config.mjs`.
   sets every colour, corner, shadow and font posthog-js reads
   (`--ph-survey-*` on its `PostHogSurvey-<id>` box, with `!important` over
   the survey's own appearance, and `--ph-conv-*` on the chat's container).
-  Where it opens and its words stay the survey's settings in PostHog.
-  `tests/posthog-widgets.test.mjs` reads the installed posthog-js for the
-  names, so an update that reads a new one fails until it has a token.
+  Where it opens and its words stay the survey's settings in PostHog. The
+  chat is the desktop layout's (`CHAT_MEDIA`, Tailwind's lg): a reader who
+  arrives on a smaller screen never loads it (`disable_conversations`), and
+  a narrowed window hides it. `tests/posthog-widgets.test.mjs` reads the
+  installed posthog-js for the names, so an update that reads a new one
+  fails until it has a token.
   - **Why:** a pop-up in PostHog's grey and blue is the one thing on the
     page that ignores the reader's look, and a colour typed into PostHog
-    escapes the contrast check.
+    escapes the contrast check. On a phone the chat's launcher and window
+    sit over the page's own controls.
 - **The rule:** a video loads its player only when the reader presses play.
 - **The rule:** Next's image optimiser is off (`images: { unoptimized:
   true }` in `next.config.mjs`, and no remote host), so `/_next/image`

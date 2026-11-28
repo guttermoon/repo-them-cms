@@ -81,11 +81,15 @@ export function ThemeSelect({ label, names }: { label: string; names: Record<The
       <span aria-hidden="true" className="text-fine text-sub">
         {label}
       </span>
-      <div className="inline-flex flex-wrap rounded-full border border-line-strong p-0.5">
+      {/* On a phone, five equal columns, each look's mark over its word, in a
+          card (its options blocks, the card's corner less its 6px gap): five
+          pills in a row are wider than a phone, and wrapped they left one
+          alone on a second line. From sm, one row of pills. */}
+      <div className="grid w-full grid-cols-5 rounded-card border border-line-strong p-1.5 sm:inline-flex sm:w-auto sm:rounded-full sm:p-0.5">
         {THEME_CHOICES.map((value) => (
-          <label key={value} className="relative">
+          <label key={value} className="relative min-w-0">
             <input type="radio" name="theme" value={value} checked={choice === value} onChange={() => set(value)} className="peer sr-only" />
-            <span className="flex min-h-target cursor-pointer items-center gap-1 rounded-full px-2 py-0.5 text-fine text-sub tone hover:text-ink peer-checked:bg-wash peer-checked:text-ink peer-focus-visible:outline peer-focus-visible:outline-focus peer-focus-visible:outline-accent">
+            <span className="flex min-h-target cursor-pointer flex-col items-center justify-center gap-1 rounded-block px-1 py-1.5 text-center text-fine text-sub tone hover:text-ink peer-checked:bg-wash peer-checked:text-ink peer-focus-visible:outline peer-focus-visible:outline-focus peer-focus-visible:outline-accent sm:flex-row sm:rounded-full sm:px-2 sm:py-0.5">
               <span aria-hidden="true" className="theme-swatch" data-swatch={value} />
               {names[value]}
             </span>

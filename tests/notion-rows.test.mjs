@@ -16,6 +16,7 @@ import {
   slugify,
   variantsOf,
   zonedTime,
+  fileVersion,
 } from "../lib/notion/rows.ts"
 import { styledText as linkedText } from "../lib/inline-text.ts"
 import { liveLogos } from "../lib/content/select.ts"
@@ -91,6 +92,24 @@ test("an unticked text row hides its slot, a ticked one beats it, and anything e
   assert.equal(readRows([post]).entries.length, 0, "a page, a post or a product shows only ticked")
 })
 
+test("a picture's address follows its file: an edit to the row's words or Notion's hourly signature leaves it, a new upload changes it", () => {
+  const upload = (path, sig) => ({ name: "cover.jpg", type: "file", file: { url: `https://prod-files-secure.s3.us-west-2.amazonaws.com/space/${path}/cover.jpg?X-Amz-Signature=${sig}` } })
+  const post = (edited, file) => {
+    const r = row({ kind: "Post", title: "Hello", slug: "hello" }, { cover: { type: "file", file: file.file } })
+    r.last_edited_time = edited
+    return readRows([r]).entries[0].cover.v
+  }
+  const before = post("2026-11-01T09:00:00.000Z", upload("file-1", "a"))
+  assert.equal(post("2026-11-28T15:06:00.000Z", upload("file-1", "b")), before, "the words edited, the address signed again: the same picture, the same address")
+  assert.notEqual(post("2026-11-28T15:06:00.000Z", upload("file-2", "a")), before, "another upload: another address")
+  // an outside picture is its own address
+  assert.equal(fileVersion("https://pics.example/a.jpg?w=1", "x"), fileVersion("https://pics.example/a.jpg?w=2", "y"))
+  assert.notEqual(fileVersion("https://pics.example/a.jpg", "x"), fileVersion("https://pics.example/b.jpg", "x"))
+  // with no address to read, the row's last edit, as before
+  assert.equal(fileVersion(undefined, "2026-11-01T09:00:00.000Z"), "2026-11-01T09:00:00.000Z")
+  assert.equal(fileVersion("not an address", "fallback"), "fallback")
+})
+
 test("a ticked Site Copy row carries its picture: its Notion cover, else its Image; an unticked or empty one none", () => {
   const file = { name: "share.png", type: "file", file: { url: "https://files.test/share.png" } }
   const withFile = row({ kind: "Site Copy", title: "meta.pricing.image", text: [rt("Four plans on a shelf")], cover: [file] })
@@ -99,7 +118,7 @@ test("a ticked Site Copy row carries its picture: its Notion cover, else its Ima
   assert.equal(read.picture.field, "prop")
   assert.equal(read.picture.prop, "Image")
   assert.equal(read.picture.id, withFile.id)
-  assert.equal(read.picture.v, withFile.last_edited_time, "a new upload is a new address")
+  assert.equal(read.picture.v, fileVersion("https://files.test/share.png", ""), "the file's own version, not the row's last edit")
 
   const covered = row({ kind: "Site Copy", title: "meta.pricing.image", cover: [file] }, { cover: { type: "external", external: { url: "https://pics.example/cover.jpg" } } })
   assert.equal(readRow(covered).picture.field, "cover", "Notion's own cover first, as a page's")

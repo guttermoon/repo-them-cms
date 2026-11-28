@@ -5,7 +5,7 @@
 import { render } from "@testing-library/react"
 import { describe, expect, test } from "vitest"
 
-import { PostCard } from "@/components/notion/post-card"
+import { PostCard, PostGallery } from "@/components/notion/post-card"
 import { PageHeader } from "@/components/ui/page"
 import type { Entry } from "@/lib/notion/rows"
 
@@ -48,5 +48,26 @@ describe("Cover Tint", () => {
     const off = frameOf(render(<PageHeader title="A page" cover={{ ...cover, tint: false }} />).container)
     expect(off.classList.contains("cover-tint")).toBe(false)
     expect(off.hasAttribute("data-untinted")).toBe(true)
+  })
+})
+
+describe("the picture the blog opens on", () => {
+  // covers Notion hosts, so each is asked for through the media route
+  const hosted = (id: string): Entry => ({ ...post(true), id, slug: `post-${id}`, cover: { owner: "page", id, field: "cover", v: `000000000000000${id}` } }) as Entry
+
+  test("the lead post's cover comes with the page, first; every other card's waits until it is near", () => {
+    const { container } = render(<PostGallery posts={["1", "2", "3"].map(hosted)} label="Post" lead />)
+    const [lead, ...rest] = [...container.querySelectorAll("img")]
+    expect(lead.getAttribute("loading")).toBe("eager")
+    expect(lead.getAttribute("fetchpriority")).toBe("high")
+    for (const img of rest) {
+      expect(img.getAttribute("loading")).toBe("lazy")
+      expect(img.hasAttribute("fetchpriority")).toBe(false)
+    }
+  })
+
+  test("a gallery with no lead (the homepage's, at its foot) opens on nothing", () => {
+    const { container } = render(<PostGallery posts={["1", "2"].map(hosted)} label="Post" />)
+    for (const img of container.querySelectorAll("img")) expect(img.getAttribute("loading")).toBe("lazy")
   })
 })

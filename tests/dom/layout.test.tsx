@@ -197,6 +197,24 @@ describe("the four looks", () => {
     expect(document.documentElement.dataset.theme).toBe("light")
   })
 
+  test("the footer's choice of five sits in one row on a phone, each look in a column of its own", () => {
+    render(<ThemeSelect label="Appearance" names={NAMES} />)
+    const group = screen.getByRole("group", { name: "Appearance" })
+    const options = group.querySelector("input[type=radio]")!.closest("label")!.parentElement!
+    // one column per look, so none is left alone on a line of its own
+    expect(options.className).toMatch(new RegExp(`(^|\\s)grid-cols-${THEME_CHOICES.length}(\\s|$)`))
+    expect(options.className).toMatch(/(^|\s)grid(\s|$)/)
+    // a card holding blocks on a phone, the card's corner less its 6px gap; a row of pills from sm
+    expect(options.className).toMatch(/(^|\s)rounded-card(\s|$)/)
+    expect(options.className).toMatch(/(^|\s)p-1\.5(\s|$)/)
+    expect(options.className).toMatch(/(^|\s)sm:rounded-full(\s|$)/)
+    for (const span of group.querySelectorAll("label > span")) {
+      expect(span.className).toMatch(/(^|\s)rounded-block(\s|$)/)
+      expect(span.className).toMatch(/(^|\s)sm:rounded-full(\s|$)/)
+      expect(span.className).toMatch(/(^|\s)min-h-target(\s|$)/)
+    }
+  })
+
   test("a look chosen in another tab is followed in this one", async () => {
     render(<ThemeSelect label="Appearance" names={NAMES} />)
     const group = screen.getByRole("group", { name: "Appearance" })

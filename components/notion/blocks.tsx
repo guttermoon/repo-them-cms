@@ -7,7 +7,7 @@ import { hostOf, videoFor } from "@/lib/content/embeds"
 import { mediaUrl } from "@/lib/content/media"
 import type { NBlock } from "@/lib/notion/blocks"
 import { splitCaption } from "@/lib/notion/alt-text"
-import { iconFrom, type IconValue, type MediaRef, type RichRun } from "@/lib/notion/rows"
+import { fileVersion, iconFileUrl, iconFrom, type IconValue, type MediaRef, type RichRun } from "@/lib/notion/rows"
 import { CodeBlock } from "./code"
 import { NotionIcon } from "./icon"
 import type { RenderContext } from "./context"
@@ -113,11 +113,12 @@ function List({ kind, items, ctx }: { kind: "bulleted_list_item" | "numbered_lis
 
 /** A callout's icon as Notion gives it; Notion's lightbulb when it has none. */
 function CalloutIcon({ block }: { block: NBlock }) {
-  const icon = iconFrom(payload(block).icon as IconValue | null | undefined, (external) => ({
+  const value = payload(block).icon as IconValue | null | undefined
+  const icon = iconFrom(value, (external) => ({
     owner: "block",
     id: block.id,
     field: "icon",
-    v: block.edited ?? "",
+    v: fileVersion(external ?? iconFileUrl(value), block.edited ?? ""),
     ...(external ? { external } : {}),
   }))
   return icon ? <NotionIcon icon={icon} /> : <Icon name="lightbulb" className="n-c-gray" />

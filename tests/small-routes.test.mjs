@@ -281,6 +281,27 @@ test("media: an answer from Notion is used for 50 minutes and never after, whate
   assert.equal(asked() - start, 2, "past it Notion is asked again: its addresses die at the hour")
 })
 
+test("media: one answer serves a page's pictures whatever their versions; a picture replaced since is asked for afresh, once", async (t) => {
+  const { kept } = await import("./support/next-cache.mjs")
+  kept.answers = new Map()
+  t.after(() => {
+    kept.answers = null
+  })
+  const data = await getSiteData()
+  const product = data.entries.find((e) => e.cover && !e.cover.external && e.gallery?.some((g) => !g.external))
+  const [cover, picture] = [product.cover, product.gallery.find((g) => !g.external)]
+  assert.notEqual(cover.v, picture.v, "each file has its own version")
+  const asked = () => fake.requests.filter((r) => r.startsWith(`GET /v1/pages/${product.id}`)).length
+  const start = asked()
+  assert.equal((await fetchMedia(mediaUrl(cover, "cover"))).status, 200)
+  assert.equal((await fetchMedia(mediaUrl(picture, "picture"))).status, 200)
+  assert.equal(asked() - start, 1, "two versions, one page, one request")
+  // the page printed an address for a cover uploaded after the answer was kept
+  const replaced = await fetchMedia(mediaUrl({ ...cover, v: "0123456789abcdef" }, "cover"))
+  assert.equal(replaced.status, 200)
+  assert.equal(asked() - start, 2, "Notion is asked as it is now, and only once")
+})
+
 test("media: an answer is let go a minute before the first of its addresses expires, whatever its age", async (t) => {
   const { kept } = await import("./support/next-cache.mjs")
   kept.answers = new Map()
