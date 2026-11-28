@@ -3,6 +3,38 @@
   "description": "REPO THEM: a Notion-powered CMS. A website you write in Notion: copy, pages, a blog, a shop and plans in one Notion database, on Next.js.",
   "version": "1.0.0",
   "private": true,
+  "keywords": [
+    "notion",
+    "notion-cms",
+    "cms",
+    "website-template",
+    "nextjs",
+    "react",
+    "vercel",
+    "blog",
+    "shop",
+    "shopify",
+    "printify",
+    "accessibility",
+    "privacy",
+    "typescript"
+  ],
+  "homepage": "https://github.com/guttermoon/repo-them-cms#readme",
+  "bugs": {
+    "url": "https://github.com/guttermoon/repo-them-cms/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/guttermoon/repo-them-cms.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Megan Aileen Williams",
+    "url": "https://denot.app"
+  },
+  "engines": {
+    "node": ">=22.18"
+  },
   "scripts": {
     "dev": "next dev",
     "prebuild": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./tests/register-ts.mjs scripts/snapshot.mjs && node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./tests/register-ts.mjs scripts/email-setup.mjs && node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./tests/register-ts.mjs scripts/posthog-setup.mjs",
@@ -30,7 +62,8 @@
     "sharpness": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./tests/register-ts.mjs scripts/sharpness-audit.mjs",
     "indexnow": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/indexnow.mjs",
     "demo-images": "node scripts/build-demo-images.mjs",
-    "docs": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./tests/register-ts.mjs scripts/build-docs.mjs"
+    "docs": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./tests/register-ts.mjs scripts/build-docs.mjs",
+    "readme-images": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./tests/register-ts.mjs scripts/readme-images.mjs"
   },
   "dependencies": {
     "@notionhq/client": "5.31.1",
@@ -69,9 +102,5 @@
     "@posthog/browser-common": "0.9.5",
     "@posthog/core": "1.59.1",
     "@posthog/types": "1.416.0"
-  },
-  "license": "MIT",
-  "engines": {
-    "node": ">=22.18"
   }
 }

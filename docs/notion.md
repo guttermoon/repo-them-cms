@@ -246,8 +246,11 @@ nothing too.
   words alone.
 - **A button goes where its row's link goes.** Link the words of a
   button's row (`nav.get`, `home.cta.shop`, `home.cta.plans`,
-  `home.final.contact`) and the button goes there instead of the address in
-  the code; the words stay the button's words.
+  `home.final.shop`, `home.final.contact`, `security.report.contact`) and
+  the button goes there instead of the address in the code; the words stay
+  the button's words. `security.report.contact` goes to the site's own
+  contact form until then; a site that takes bug reports elsewhere (the
+  template's demo sends them to its GitHub issue forms) links it there.
 - Where a slot names a control or is the words of a link the site draws (a
   placeholder, a menu item, the address in a sentence), a link in it is
   shown as its words. Notion links an address it recognises on its own

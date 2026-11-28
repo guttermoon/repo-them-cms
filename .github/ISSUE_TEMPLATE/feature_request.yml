@@ -1,0 +1,37 @@
+name: An idea
+description: Something REPO THEM could do
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ideas are read against the rules in [CLAUDE.md](https://github.com/guttermoon/repo-them-cms/blob/main/CLAUDE.md), each of which says why it is there. An idea that keeps them is the quickest to land.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What it would let you do
+      description: The problem first, what you're trying to do and what is in the way.
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: How it might work
+      description: In Notion, on the page, or both.
+
+  - type: textarea
+    id: today
+    attributes:
+      label: What you do instead today
+
+  - type: checkboxes
+    id: promises
+    attributes:
+      label: The template's promises
+      description: Tick the ones you know it keeps. An unticked one is fine, and worth talking about.
+      options:
+        - label: Every word it adds can be written in Notion
+        - label: A reader's browser still talks to the site and nobody else
+        - label: It works with no settings, as the starter site

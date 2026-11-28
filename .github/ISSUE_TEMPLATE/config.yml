@@ -1,0 +1,12 @@
+# The issue chooser. GitHub adds "Report a security vulnerability" and the
+# security policy itself (SECURITY.md, private vulnerability reporting), so
+# security is not a link here. Blank issues stay open: a copy of the
+# template keeps its own site's work in its own issues, not in these forms.
+blank_issues_enabled: true
+contact_links:
+  - name: Set it up
+    url: https://github.com/guttermoon/repo-them-cms#set-it-up
+    about: Three steps, about ten minutes and no terminal. Most questions are answered there or in the docs it links to.
+  - name: Have it set up for you
+    url: https://denot.app
+    about: The template's maker connects it, builds your site on Notion, or keeps it up to date.

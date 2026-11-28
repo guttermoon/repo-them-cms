@@ -5,7 +5,7 @@ import { sitePlans } from "@/components/sections/plans"
 import { ServicePromises } from "@/components/sections/template/services"
 import { JsonLd } from "@/components/system/json-ld"
 import { LinkedText } from "@/components/system/linked-text"
-import { plainText, slotText } from "@/components/system/notion-text"
+import { plainText, slotHref, slotText } from "@/components/system/notion-text"
 import { Callout } from "@/components/ui/blocks"
 import { ButtonLink, ButtonRow } from "@/components/ui/button"
 import { Icon } from "@/components/ui/icon"
@@ -337,15 +337,19 @@ export const PAGE_SECTIONS = {
     )
   },
 
-  "security.report": ({ T, id }) => (
+  // the first button goes where its row's link says (a demo's bug reports to
+  // its issue forms), else to this site's own contact form
+  "security.report": ({ T, content, id }) => (
     <FinalCta
       titleId={id("security-report")}
       title={<T k="security.report.title">found a problem?</T>}
       lede={<T k="security.report.lede">Please say so privately, not in a public issue, so it can be fixed before anybody else finds it.</T>}
       actions={
         <ButtonRow className="justify-center">
-          <ButtonLink href="/contact?type=problem">
-            <T k="security.report.contact">Report it privately</T>
+          <ButtonLink href={slotHref(content, "security.report.contact", "/contact?type=problem")}>
+            <T k="security.report.contact" words>
+              Report it privately
+            </T>
           </ButtonLink>
           {REPO_URL ? (
             <ButtonLink href={`${REPO_URL}/security/policy`} tone="secondary">

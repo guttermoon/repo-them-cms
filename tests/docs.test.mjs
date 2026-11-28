@@ -13,7 +13,7 @@ import { menusTable, schemaTable, sectionsTable, withBlock } from "../lib/docs.t
 const ROOT = fileURLToPath(new URL("../", import.meta.url))
 const read = (file) => readFileSync(join(ROOT, file), "utf8")
 const DOCS = readdirSync(join(ROOT, "docs")).filter((f) => f.endsWith(".md")).map((f) => `docs/${f}`)
-const ALL = ["README.md", "CLAUDE.md", "SECURITY.md", ...DOCS]
+const ALL = ["README.md", "CLAUDE.md", "SECURITY.md", "CONTRIBUTING.md", "SUPPORT.md", "CODE_OF_CONDUCT.md", ".github/pull_request_template.md", ...DOCS]
 const SCRIPTS = JSON.parse(read("package.json")).scripts
 
 test("the property table in docs/notion.md is the schema's (npm run docs rewrites it)", () => {

@@ -1,0 +1,103 @@
+name: Something is broken
+description: The site, the setup or the docs don't do what they say
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time. A security problem never goes here: the [security policy](https://github.com/guttermoon/repo-them-cms/security/policy) says where it does.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you saw, in plain words. A screenshot helps.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: How to see it
+      description: The fewest steps from a fresh page. A failing test is better still.
+      placeholder: |
+        1. Open /pricing
+        2. Press Yearly
+        3. …
+    validations:
+      required: true
+
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where
+      options:
+        - A page of the site
+        - A form (contact, mailing list or feedback)
+        - The shop or the cart
+        - Notion (the database, a slot, notion:check)
+        - Deploying or building
+        - A workflow (CI, the feedback loop, IndexNow)
+        - The docs
+        - Somewhere else
+    validations:
+      required: true
+
+  - type: dropdown
+    id: notion
+    attributes:
+      label: Notion
+      options:
+        - Not connected (the starter site)
+        - Connected
+        - The stand-in Notion (npm run notion:fake)
+        - Not sure
+
+  - type: dropdown
+    id: look
+    attributes:
+      label: Look
+      multiple: true
+      options:
+        - Light
+        - Dark
+        - Mono
+        - Rainbow
+        - Not sure
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and device
+      placeholder: Firefox 145 on a Pixel 9
+
+  - type: input
+    id: version
+    attributes:
+      label: Which code
+      description: The commit your copy is on, or the day you made it.
+      placeholder: a1b2c3d
+
+  - type: textarea
+    id: log
+    attributes:
+      label: Error or log
+      description: From the browser's console or Vercel's build log. Take tokens, keys and addresses out first.
+      render: text
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you send it
+      options:
+        - label: I searched the issues, and this isn't there yet
+          required: true
+        - label: Nothing private is in it, no token, key, database ID or email address
+          required: true

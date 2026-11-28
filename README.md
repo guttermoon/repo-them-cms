@@ -1,6 +1,10 @@
 # REPO THEM
 
-**A Notion-powered CMS.** A website you write in Notion.
+**A Notion-powered CMS.** A website you write in Notion:
+[see it live](https://repo-them.denot.app), every word of it from one Notion
+database.
+
+[![CI](https://github.com/guttermoon/repo-them-cms/actions/workflows/ci.yml/badge.svg)](https://github.com/guttermoon/repo-them-cms/actions/workflows/ci.yml)
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fguttermoon%2Frepo-them-cms&project-name=repo-them&repository-name=repo-them&env=NOTION_TOKEN,NOTION_DATABASE_ID&envDescription=Your%20Notion%20integration%27s%20token%20%28ntn_%E2%80%A6%29%2C%20and%20the%20link%20to%20your%20copy%20of%20the%20REPO%20THEM%20template%20in%20Notion%20%28the%20whole%20link%20works%29.%20The%20guide%20shows%20where%20each%20one%20is.&envLink=https%3A%2F%2Fgithub.com%2Fguttermoon%2Frepo-them-cms%23set-it-up)
 &nbsp; after [duplicating the Notion template](https://www.notion.so/4236f6ccb2c18175b890e03e8f6ca2a8): three steps, no code
@@ -13,6 +17,11 @@ in to and no build to run, and the editor is the one you already use.
 
 REPO THEM is a Next.js site made to be forked. It's plain on purpose, like a
 tin with a label that says what's in it.
+
+<a href="https://repo-them.denot.app"><picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/home-dark.webp">
+  <img src="docs/images/home-light.webp" width="830" alt="The live demo's homepage: the name repo them over the words generic, on purpose; the headline everything you need, nothing you don't; a line about plain products and plain plans; and two buttons, Shop the shelf and See the plans">
+</picture></a>
 
 **A copy starts as a typical generic website, not a page about the
 template.** The homepage, the shop, pricing, About, Team, the blog and the
@@ -113,6 +122,8 @@ publish its `service.title` slot blank to take it away.
 - **Four looks:** light, dark, mono (black and white with light grey) and
   rainbow (loud and colourful), following the reader's system or their
   choice, each checked for contrast.
+
+<img src="docs/images/four-looks.webp" width="830" alt="The same homepage in each of the four looks: light, blue on white; dark, glowing green on black; mono, black on white; and rainbow, a headline in many colours on cream">
 
 ## Set it up
 
@@ -408,6 +419,7 @@ Publishing and checks:
 | `npm run indexnow` | Tells search engines the pages have changed (needs `INDEXNOW_KEY` and `SITE_URL`: [SEO](docs/seo.md)) |
 | `npm run a11y` / `npm run privacy` | Accessibility and privacy audits of a running site (install Playwright first: [development](docs/development.md#the-audits)) |
 | `npm run responsive` / `npm run sharpness` | Every page at five widths, and every picture checked for a retina screen, on a running site |
+| `npm run readme-images` | Redraws this README's pictures and the repository's social preview from a running site ([the repository's page](docs/development.md#the-repositorys-own-page)) |
 
 ## Documentation
 
@@ -443,9 +455,12 @@ Write to **[hello@denot.app](mailto:hello@denot.app)**, or see
 ## Star it
 
 If REPO THEM is useful to you, **star the repository**. It costs nothing,
-helps the next person find it, and makes the maker unreasonably happy. Issues
-and pull requests are welcome. Security reports go to
-[SECURITY.md](SECURITY.md).
+helps the next person find it, and makes the maker unreasonably happy.
+
+Issues and pull requests are welcome: [CONTRIBUTING.md](CONTRIBUTING.md)
+says how, and [SUPPORT.md](SUPPORT.md) where to ask for help. Everybody
+taking part follows the [code of conduct](CODE_OF_CONDUCT.md). Security
+reports go to [SECURITY.md](SECURITY.md), never to an issue.
 
 ## Credits and licence
 

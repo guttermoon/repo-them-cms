@@ -182,6 +182,38 @@ Each takes extra paths after the address, such as
 `npm run a11y -- http://localhost:3000 /about /blog/hello`. Point them at
 the stand-in Notion to check the pages written in Notion too.
 
+## The repository's own page
+
+What GitHub shows a stranger before a line of code:
+
+| File | What it is |
+|---|---|
+| `README.md` | The front page: it opens on the live demo (`DEMO_URL` in `lib/site.ts`), and its pictures are in `docs/images` |
+| `CONTRIBUTING.md` | How to propose a change, and the rules a change meets most |
+| `CODE_OF_CONDUCT.md` | The Contributor Covenant 2.1, with the maker's address for reports |
+| `SUPPORT.md` | Where to ask for help, and where not to |
+| `SECURITY.md` | Where to report a vulnerability, and how a copy keeps safe |
+| `.github/ISSUE_TEMPLATE/` | The bug and idea forms, and the links the issue chooser offers beside them |
+| `.github/pull_request_template.md` | The checklist a pull request opens with |
+| `.github/social-preview.png` | The card shown wherever the repository's address is shared |
+| `.github/FUNDING.yml` | The Sponsor button, to the maker's site. It shows once **Settings → General → Features → Sponsorships** is ticked |
+
+The README's pictures and the social preview are drawn from a running site,
+at twice the size they're shown:
+
+```bash
+npm run readme-images
+```
+
+Like the audits, it needs Playwright, and takes the site's address after
+`--` (`http://localhost:3000` if none). GitHub takes a social preview only
+as an upload: **Settings → General → Social preview**.
+`tests/community.test.mjs` holds all of these to the template's address and
+the maker's public one.
+
+**In your copy** they are the template's: keep them, put your own address
+in, or delete them. Nothing on the site reads them.
+
 ## Making changes
 
 **A new designed page:**
