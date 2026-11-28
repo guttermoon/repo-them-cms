@@ -243,6 +243,7 @@ test("every route a reader can call awaits the limiter, and only the analytics p
     "app/go/[slug]/route.ts": true,
     "app/markdown/[...path]/route.ts": true,
     "app/media/[...parts]/route.ts": true,
+    "app/og/[[...path]]/route.tsx": true,
     "app/ingest/[...path]/route.ts": false,
     "app/ga/[...path]/route.ts": false,
   }

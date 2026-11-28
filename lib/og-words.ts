@@ -14,8 +14,9 @@ import { plainText, siteDescriptor, siteName, siteNoun } from "./slots"
 /** A share card's words: its title and label, and the site's name and
  *  descriptor as the copy has them (`site.name`, `site.descriptor`).
  *  `front`: the home page's card, which is the one a shared site shows, so
- *  it leads with the shelf (lib/og-card.tsx). */
-export type OgWords = { title: string; label: string; name: string; descriptor: string; front?: boolean }
+ *  it leads with the shelf (lib/og-card.tsx). `missing`: the address is no
+ *  page, and its card is the one every such address shares (lib/og-once.ts). */
+export type OgWords = { title: string; label: string; name: string; descriptor: string; front?: boolean; missing?: boolean }
 
 export async function ogWords(path: string): Promise<OgWords> {
   const data = await getSiteData()
@@ -60,5 +61,5 @@ export async function ogWords(path: string): Promise<OgWords> {
   }
   const page = livePages(data).find((p) => `/${p.slug}` === path)
   if (page) return { ...site, title: page.title, label: labels.page }
-  return { ...site, title: siteNoun(copy), label: labels.missing }
+  return { ...site, title: siteNoun(copy), label: labels.missing, missing: true }
 }

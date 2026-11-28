@@ -74,7 +74,17 @@ must not compete in search.
 - with the "web site" box (`assets/og/box.png`) standing on the band beside
   a short title;
 - in the site's own fonts, read from `assets/fonts`;
-- cached for an hour.
+- kept for an hour by a browser and a day by the CDN, so the server draws a
+  page's card about once a day.
+
+Anybody can ask for any address under `/og/`, so the route keeps its costs
+to the site's own pages. A caller may ask for 60 cards a minute
+([rate limits](privacy-and-security.md#rate-limits)). An address that is no
+page gets the card every such address shares (the site's noun and "Not
+found", `og.label.missing`), drawn once and handed out again
+(`lib/og-once.ts`). It is drawn again only when those words change, and
+kept by the CDN for five minutes, so a page published there later soon
+shows its own.
 
 A page written in Notion has a card the moment it's published. A post with a
 cover uses the cover.

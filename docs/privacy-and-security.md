@@ -138,7 +138,7 @@ Each route takes a set number of requests a minute from one address:
 |---|---|
 | `/api/subscribe`, `/api/contact`, `/api/feedback` | 5 |
 | `/api/revalidate` | 20 |
-| `/go/` | 60 |
+| `/go/`, `/og/` | 60 |
 | `/api/notion-webhook` | 120 |
 | `/ga/` | 300 |
 | `/media/`, `/ingest/` | 600 |
