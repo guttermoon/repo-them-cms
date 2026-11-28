@@ -87,6 +87,9 @@ publish its `service.title` slot blank to take it away.
   - Analytics (PostHog, Google Analytics, or both) counts nothing until a
     reader says yes. The question is a bag of cookies, a plain box or a
     banner, as you choose in Notion (`cookies.shape`).
+  - PostHog's survey pop-ups and support chat wear your site's look. The
+    chat shows on screens 1,024 pixels wide and up: on a phone or a tablet
+    it would sit over the page, so it isn't loaded there at all.
 - **Safe by default.**
   - Pictures are fetched by your server from public hosts only, through
     signed addresses, and can't run as a page.
@@ -103,7 +106,10 @@ publish its `service.title` slot blank to take it away.
   the flags and the loop set themselves up: [feedback](docs/feedback.md).
 - **Pictures at the size they're shown.** Upload a photograph to Notion as
   large as you like: your server resizes it for each screen and sends WebP,
-  cached for a year.
+  cached for a year. The first visit to a picture at a size waits while it
+  is made, and every visit after is quick. A picture keeps its address
+  until you upload a new one, so editing a post's words keeps it quick;
+  after a new deploy, a first visit can be slow again.
 - **Found by search engines and assistants:**
   - metadata and share cards for every page, with large pictures allowed
     in Google Discover;
