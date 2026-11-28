@@ -275,7 +275,7 @@ settings later, and redeploy.
 ### From the command line
 
 For working on the code, or making the database from scratch instead of
-duplicating the template. You need Node 22.18 or newer.
+duplicating the template. You need Node 22.18 or a newer 22, 24, or 26 and on.
 
 **1. Get the code.** [Use this template](https://github.com/guttermoon/repo-them-cms/generate)
 on GitHub (or fork it), then install it:

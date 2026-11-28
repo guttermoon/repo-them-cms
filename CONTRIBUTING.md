@@ -38,7 +38,7 @@ Most rules are tests, so `npm run check` says when a change breaks one.
 
 ## Set up
 
-Node 22.18 or newer.
+Node 22.18 or a newer 22, 24, or 26 and on.
 
 ```bash
 npm install

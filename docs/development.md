@@ -1,7 +1,7 @@
 # Development
 
 Next.js 15 (app router), React 19, Tailwind 3 and TypeScript. Node 22.18 or
-newer.
+a newer 22, then 24, or 26 and on: the test runner supports no odd release.
 
 ## Getting started
 

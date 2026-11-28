@@ -1,7 +1,9 @@
-// Which packages a live site runs, and the one held to a fixed release
-// (docs/development.md, "Dependencies"). `npm audit --omit=dev` reads
-// `dependencies` as what a reader's request can reach, so a build or test
-// tool there is an advisory counted against the site for nothing.
+// Which packages a live site runs, the one held to a fixed release, and the
+// Node the site asks for (docs/development.md, "Dependencies"). `npm audit
+// --omit=dev` reads `dependencies` as what a reader's request can reach, so a
+// build or test tool there is an advisory counted against the site for
+// nothing; and a Node the test runner refuses is one `npm ci` refuses too
+// where engines are enforced.
 import { test } from "node:test"
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
@@ -32,4 +34,26 @@ test("Next.js uses the site's PostCSS, at a release past its advisories", () => 
   assert.equal(lock.packages["node_modules/next/node_modules/postcss"], undefined, "the lockfile still gives Next a PostCSS of its own")
   const postcss = lock.packages["node_modules/postcss"]?.version
   assert.ok(postcss && atLeast(postcss, "8.5.23"), `PostCSS ${postcss} has advisories fixed in 8.5.23`)
+})
+
+/** Whether a plain version is in a range made of `^x.y.z` and `>=x.y.z`
+ *  joined by `||`, the only forms the two ranges below use. */
+function inRange(version, range) {
+  return range.split("||").some((part) => {
+    const m = /^\s*(\^|>=)(\d+)\.(\d+)\.(\d+)\s*$/.exec(part)
+    assert.ok(m, `a range this test cannot read: ${part.trim()}`)
+    const floor = `${m[2]}.${m[3]}.${m[4]}`
+    return atLeast(version, floor) && (m[1] === ">=" || parts(version)[0] === Number(m[2]))
+  })
+}
+
+test("the site asks for no Node its test runner refuses", () => {
+  const ours = pkg.engines.node
+  const vitest = JSON.parse(readFileSync(join(ROOT, "node_modules/vitest/package.json"), "utf8")).engines.node
+  assert.ok(inRange("22.18.0", ours), "the Node line CI runs is allowed")
+  for (const major of [22, 23, 24, 25, 26, 27, 28]) {
+    for (const version of [`${major}.0.0`, `${major}.18.0`, `${major}.99.0`]) {
+      if (inRange(version, ours)) assert.ok(inRange(version, vitest), `Node ${version} is allowed here, but Vitest (${vitest}) refuses it`)
+    }
+  }
 })
