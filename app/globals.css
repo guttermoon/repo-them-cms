@@ -1115,6 +1115,15 @@ details[open] > summary .n-toggle-mark {
   --ph-conv-radius: var(--r-card) !important;
   --ph-conv-window-shadow: var(--shadow-pop) !important;
 }
+/* The support chat is the desktop layout's (CHAT_MEDIA in lib/analytics.ts,
+   Tailwind's lg): on a phone or a tablet its launcher and window would sit
+   over the page's own controls. A reader who arrives on a smaller screen
+   never loads it; this hides it when a wide window is narrowed. */
+@media not all and (min-width: 1024px) {
+  #ph-conversations-widget-container {
+    display: none !important;
+  }
+}
 
 /* Nothing moves for a reader who asked for less motion: whatever a
    component or a library animates, here it arrives at once. */

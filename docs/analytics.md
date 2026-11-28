@@ -173,6 +173,13 @@ What stays PostHog's to set, on the survey itself (**Customization**):
   own part of the page.
 - **Its words:** the question, the scale's labels and the thank-you.
 
+The chat shows on the desktop layout alone, 1024 pixels wide and up, where
+the header shows its links (`CHAT_MEDIA` in `lib/analytics.ts`). On a phone
+or a tablet its launcher and window would sit over the page's own controls,
+so a reader who arrives on a smaller screen never loads it, and a wide
+window narrowed below the line hides it. The Feedback button and the contact
+page are there on every screen.
+
 For the chat, in **Support → Settings → In-app widget**:
 
 - **Asking for an email:** turn on **Require email** (and **Collect name**,

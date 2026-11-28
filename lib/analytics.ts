@@ -72,9 +72,18 @@ export function posthogChatStorageName(key: string): string {
   return `ph_conv_${key}`
 }
 
+/** Where PostHog's support chat shows: the desktop layout, from Tailwind's
+ *  lg (1024px), where the header shows its links instead of the phone menu.
+ *  On a phone or a tablet its launcher and window would sit over the page's
+ *  own controls, so a reader who arrives on a smaller screen never loads it
+ *  (`posthogOptions`'s `chat`), and app/globals.css hides it when a wide
+ *  window is narrowed. */
+export const CHAT_MEDIA = "(min-width: 1024px)"
+
 /** The options PostHog is started with: its defaults, and the things this
- *  site needs on top of them. */
-export function posthogOptions(apiHost: string = PROXY_PATH): Partial<PostHogConfig> {
+ *  site needs on top of them. `chat`: whether this window is the layout the
+ *  support chat is for (CHAT_MEDIA). */
+export function posthogOptions(apiHost: string = PROXY_PATH, chat = true): Partial<PostHogConfig> {
   return {
     // through this site, which shortens the IP address on the way
     api_host: apiHost,
@@ -98,6 +107,8 @@ export function posthogOptions(apiHost: string = PROXY_PATH): Partial<PostHogCon
     opt_out_persistence_by_default: true,
     // names and email addresses out of page addresses, recordings included
     before_send: scrubEvent,
+    // the support chat, on the desktop layout alone (CHAT_MEDIA)
+    disable_conversations: !chat,
   }
 }
 

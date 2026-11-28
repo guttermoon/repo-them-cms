@@ -3,7 +3,7 @@
 import { useEffect } from "react"
 import type { PostHog } from "posthog-js"
 
-import { analyticsKey, posthogChatStorageName, posthogCookieName, PROXY_PATH, posthogOptions } from "@/lib/analytics"
+import { analyticsKey, CHAT_MEDIA, posthogChatStorageName, posthogCookieName, PROXY_PATH, posthogOptions } from "@/lib/analytics"
 import { onConsentChange, readConsent } from "@/lib/consent"
 import { type FlagKey, flagValue } from "@/lib/flags"
 
@@ -25,11 +25,17 @@ const KEY = analyticsKey(process.env.NEXT_PUBLIC_POSTHOG_KEY)
 
 let loading: Promise<PostHog | null> | null = null
 
+/** Whether this window is the desktop layout the support chat is for
+ *  (CHAT_MEDIA): a reader who arrives on a phone never loads the chat. */
+function chatFits(): boolean {
+  return typeof window.matchMedia !== "function" || window.matchMedia(CHAT_MEDIA).matches
+}
+
 /** posthog-js, fetched and started once; null when it could not be. */
 function load(key: string): Promise<PostHog | null> {
   loading ??= import("posthog-js")
     .then(({ default: posthog }) => {
-      posthog.init(key, posthogOptions(PROXY_PATH))
+      posthog.init(key, posthogOptions(PROXY_PATH, chatFits()))
       return posthog
     })
     .catch(() => {

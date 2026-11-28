@@ -82,3 +82,18 @@ test("the tokens it uses are ones every look defines", () => {
   assert.ok(used.size >= 8)
   for (const token of used) assert.match(css, new RegExp(`^\\s*${token}\\s*:`, "m"), `${token} is not a token in app/globals.css`)
 })
+
+test("the support chat is the desktop layout's: never loaded below it, and hidden when a window narrows", async () => {
+  const { CHAT_MEDIA, posthogOptions } = await import("../lib/analytics.ts")
+  // the desktop layout begins where the header trades the phone menu for its links: Tailwind's lg
+  assert.equal(CHAT_MEDIA, "(min-width: 1024px)")
+  assert.doesNotMatch(readFileSync(join(ROOT, "tailwind.config.ts"), "utf8"), /\bscreens\s*:/, "the breakpoints are no longer Tailwind's, so lg may not be 1024px")
+  assert.match(readFileSync(join(ROOT, "components/layout/site-header.tsx"), "utf8"), /SheetTrigger asChild className="lg:hidden"/, "the phone menu no longer ends at lg")
+  // a reader who arrives on a smaller screen never loads it
+  assert.equal(posthogOptions(undefined, false).disable_conversations, true)
+  assert.equal(posthogOptions().disable_conversations, false)
+  assert.match(readFileSync(join(ROOT, "components/layout/posthog-analytics.tsx"), "utf8"), /posthogOptions\(PROXY_PATH, chatFits\(\)\)/)
+  // and a wide window narrowed hides it
+  const below = CHAT_MEDIA.replace(/[()]/g, "\\$&")
+  assert.match(css, new RegExp(`@media not all and ${below} \\{\\s*#ph-conversations-widget-container \\{\\s*display: none !important;`))
+})
