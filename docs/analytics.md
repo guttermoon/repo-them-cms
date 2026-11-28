@@ -60,7 +60,9 @@ and the contact form are until an email platform is:
   reader's browser (`site-consent` in localStorage).
 - **No, or Escape:** nothing loads. A no after a yes switches the tools off
   at once and deletes their cookies and stored identifiers, whether or not
-  the tool had loaded on that visit. (Escape pressed to close the menu or
+  the tool had loaded on that visit. PostHog's support chat leaves the page
+  too, and its conversation, with any email typed into it, is deleted from
+  the browser (`ph_conv_<key>`, which PostHog's own opt-out leaves). (Escape pressed to close the menu or
   a list is not an answer.)
 - **The two answers look exactly alike**: the same size, the same type,
   both filled as the main button. Yes comes first, as the question asks it
@@ -163,6 +165,18 @@ What stays PostHog's to set, on the survey itself (**Customization**):
   window. The site can't move it, since PostHog places it from inside its
   own part of the page.
 - **Its words:** the question, the scale's labels and the thank-you.
+
+For the chat, in **Support → Settings → In-app widget**:
+
+- **Asking for an email:** turn on **Require email** (and **Collect name**,
+  if you want it). The chat then opens on a short form, "Before we
+  start...", and a reader gives their email before their first message. It
+  goes with the conversation to PostHog's Support inbox, so you can reply
+  by email after they leave. The site never identifies anybody, so the form
+  shows to every reader; an email given once is kept in their browser for
+  the next chat, until a no to cookies deletes it.
+- **Identity verification:** leave it off. It is for sites where people
+  log in, and this one has no accounts.
 - **"Survey by PostHog"** under it, which only PostHog's paid plans remove.
 
 The Feedback button is different: the site draws it itself, and PostHog

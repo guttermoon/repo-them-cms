@@ -4,6 +4,8 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
+import { createRequire } from "node:module"
+import { dirname, join } from "node:path"
 
 import {
   analyticsKey,
@@ -12,6 +14,7 @@ import {
   POSTHOG_ASSETS,
   POSTHOG_INGEST,
   POSTHOG_UI,
+  posthogChatStorageName,
   posthogRegion,
   PROXY_PATH,
   posthogOptions,
@@ -235,8 +238,22 @@ test("opt-in: nothing loads before a yes, and a later no opts out", () => {
   const src = read("components/layout/posthog-analytics.tsx")
   assert.match(src, /readConsent\(\) === "accepted"/, "it starts only on a stored yes")
   assert.doesNotMatch(src, /answer !== "rejected"/, "the old run-before-an-answer rule is back")
-  assert.match(src, /value === "rejected"[^\n]*opt_out_capturing/)
+  assert.match(src, /value === "rejected" && loading\) void loading\.then\(stop\)/, "a no while PostHog runs stops it")
+  const stop = /function stop\([^)]*\) \{([^}]*)\}/.exec(src)?.[1] ?? ""
+  assert.match(stop, /opt_out_capturing\(\)/, "a no stops the sending")
+  assert.match(stop, /conversations\?\.reset\(\)/, "a no takes the support chat off the page with what it kept")
   assert.match(src, /if \(value === "rejected"\) forget\(key\)/, "and what an earlier yes left is deleted, loaded or not")
+})
+
+test("a no deletes the support chat's item by the name posthog-js keeps it under", () => {
+  const ROOT = new URL("..", import.meta.url).pathname
+  const library = dirname(createRequire(join(ROOT, "package.json")).resolve("posthog-js/package.json"))
+  const chat = readFileSync(join(library, "dist", "conversations.js"), "utf8")
+  // posthog-js names it from the project's key; an update that renames it fails here
+  const prefix = /return i\?"(ph_conv_)"\+i:null/.exec(chat)?.[1]
+  assert.ok(prefix, "posthog-js no longer keeps the chat under ph_conv_<key>: forget() would leave it")
+  assert.equal(posthogChatStorageName("phc_x"), `${prefix}phc_x`)
+  assert.match(read("components/layout/posthog-analytics.tsx"), /\[name, posthogChatStorageName\(key\)\]/, "forget() deletes the chat's item")
 })
 
 test("the cookie notice asks first and says so", () => {

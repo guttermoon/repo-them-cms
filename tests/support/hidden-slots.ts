@@ -74,6 +74,9 @@ export const HIDDEN_SLOTS: Record<string, string> = {
   // only with PostHog set up
   "privacy.forms.feedback":
     "The Feedback button sends what you write, with the page you were on, the browser you use (its name and version), the look you had and the size of your window, to PostHog, which we use to read it. If you said yes to cookies, it also sends which visit it came from, so we can see what went wrong. It never sends your address or your name.",
+  "privacy.forms.chat":
+    "If this site has a support chat, it is PostHog's, and it appears only after you say yes to cookies. It sends what you write, and the email and name you give it, to PostHog, which we use to answer you, with the visit it came from. Your browser keeps the conversation so you can pick it up again, and a no to cookies deletes it.",
+  "privacy.table.chat": "PostHog's support chat, if this site has one: the conversation you started, and the email and name you gave it, so you can carry on. Only after a yes, and a later no deletes it.",
   // only with a shared rate-limit store set (lib/rate-limit.ts)
   "privacy.third.limits":
     "To stop any one visitor flooding the site, Upstash counts the requests each one makes, a minute at a time. It never learns who: it is given a stand-in for your IP address, scrambled with a key it does not have, and each count is gone within the minute.",
