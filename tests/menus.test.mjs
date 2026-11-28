@@ -209,3 +209,30 @@ test("a Menu row's Link is read from Notion, and notion:check names one it can't
   const { findings } = checkRows([notionRow({ id: "d", title: "Report a bug", link: ISSUES, published: true })])
   assert.match(findings.map((f) => f.message).join("\n"), /Menu "Report a bug": a Menu row with a Link names its menu in Slug/)
 })
+
+test("a Link on a designed page's row takes that page's place and words, in the menus the row is for", () => {
+  const SHOP = "https://shop.example/"
+  // named in Slug: the header's Shop goes to the outside shop, and the footer keeps its own
+  const header = [row("shop", { link: SHOP, menu: "header" })]
+  assert.deepEqual(menuLinks(header, "header"), ["/features", "/pricing", SHOP, "/about"])
+  assert.deepEqual(siteMenus(header).header[2], { ...menuLink("/shop"), href: SHOP }, "its words are still Shop's slot")
+  assert.ok(menuLinks(header, "footer-product").includes("/shop"))
+  // unticked, it takes Shop off the header, as a row without a Link does
+  assert.deepEqual(menuLinks([{ ...header[0], on: false }], "header"), ["/features", "/pricing", "/about"])
+  // with no Slug, it is for every menu Shop was designed for
+  const everywhere = [row("shop", { link: SHOP })]
+  for (const menu of ["header", "footer-product"]) {
+    const links = menuLinks(everywhere, menu)
+    assert.ok(links.includes(SHOP) && !links.includes("/shop"), menu)
+  }
+  assert.equal(menuProblem(everywhere[0]), undefined)
+})
+
+test("a Link to a Notion page stays Notion's; a path Notion kept on its app is this site's", () => {
+  const page = "https://app.notion.com/p/0123456789abcdef0123456789abcdef"
+  assert.equal(menuLinkHref(page), page)
+  assert.equal(menuLinkHref("https://www.notion.so/Handbook-0123456789abcdef0123456789abcdef"), "https://www.notion.so/Handbook-0123456789abcdef0123456789abcdef")
+  assert.equal(menuLinkHref("https://app.notion.com/pricing"), "/pricing")
+  const help = siteMenus([row("Our handbook", { link: page, menu: "footer-help" })]).footer.find((c) => c.key === "help")
+  assert.deepEqual(help.links.at(-1), { href: page, name: "Our handbook" })
+})

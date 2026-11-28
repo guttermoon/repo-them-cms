@@ -574,9 +574,10 @@ in `next.config.mjs`.
   are menus (`MENUS`, `siteMenus` in `lib/menus.ts`), and Notion's Menu rows
   arrange them: Title the page, Slug the menu (empty: wherever it was
   designed), Order its place, Published on or off. A row with a Link goes
-  to that address instead, Title its words, through `safeHref` and
-  `outsideLink`; a link out of the site is the database's, never the
-  code's. A link with no row stays
+  to that address instead of its Title's page, in that page's place and
+  words (a new row's Title is its words), through `safeHref` and
+  `outsideLink`, a Notion page's address staying Notion's; a link out of
+  the site is the database's, never the code's. A link with no row stays
   where it was designed. The header holds no more links than it was
   designed for (four, then two); the phone menu is every menu's links, each
   once. A component draws the links it is handed, never a list of its own.

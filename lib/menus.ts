@@ -12,11 +12,14 @@
  * shows. A link with no row stays where it was designed, so a database with
  * no Menu rows has the menus as designed, and one row changes one link.
  *
- * A row with a Link goes to that address instead of a page, and its Title is
- * the link's words: a way out of the site (a demo's issue forms, a shop on
- * another platform) that a copy adds from Notion, never one in the code. It
+ * A row with a Link goes to that address instead of the page its Title
+ * names: a way out of the site (a demo's issue forms, a shop on another
+ * platform) that a copy adds from Notion, never one in the code. On a
+ * designed page's row (`shop`) it takes that page's place and words, in
+ * the menus the row is for; on a new row its Title is the words, and it
  * names its menu in Slug. The address goes through `safeHref`, as every
- * address a person typed does, and one on this site is drawn as its path.
+ * address a person typed does: one on this site is drawn as its path, and a
+ * Notion page's own address stays Notion's.
  *
  * The header holds as many links as it was designed for (four, then two),
  * so the row weighs the same either side of the mark; past that, the first
@@ -29,7 +32,7 @@
  */
 import { safeHref } from "./inline-links"
 import { FOOTER_COLUMNS, INDEXED_PAGES, MAIN_NAV, navItem, navKey, SIDE_NAV } from "./nav"
-import { sitePathFromHref } from "./notion/links"
+import { notionPageIdFromHref, sitePathFromHref } from "./notion/links"
 import { SITE_URL } from "./site"
 
 /** The menus a Menu row's Slug can name. */
@@ -100,10 +103,14 @@ export function menuHref(title: string): string {
 
 const DESIGNED_PAGES = new Set(INDEXED_PAGES.map((i) => i.href))
 
-/** Where a row with a Link goes: a path for this site's own address, the
- *  address for another, nothing for one a browser must not follow. */
+/** Where a row with a Link goes: a Notion page's own address as it is, a
+ *  path for this site's own address (or a path Notion kept on its app), the
+ *  address for another site, and nothing for one a browser must not follow. */
 export function menuLinkHref(link: string): string | undefined {
-  return safeHref(sitePathFromHref(link, SITE_URL) ?? link)
+  const written = link.trim()
+  // a Notion page's address carries its ID; a path kept on Notion's app does not
+  if (notionPageIdFromHref(written)) return safeHref(written)
+  return safeHref(sitePathFromHref(written, SITE_URL) ?? written)
 }
 
 /** Where a row's link goes: its Link's address, else the page its Title
@@ -127,28 +134,47 @@ export function menuLinks(rows: readonly MenuRow[] | undefined, menu: MenuName, 
   return max === undefined ? links : links.slice(0, max)
 }
 
-/** A menu's addresses in order, before its room cuts them. */
-function orderedLinks(rows: readonly MenuRow[] | undefined, menu: MenuName, pages: readonly MenuPage[]): string[] {
-  const known = new Set([...DESIGNED_PAGES, ...pages.map((p) => p.href)])
+/** A menu's designed links by their places (10, 20, 30…), and, for the
+ *  company column, the Notion pages with an Order after them. */
+function designedFor(menu: MenuName, pages: readonly MenuPage[]): Map<string, number> {
   const designed = new Map<string, number>(MENUS[menu].links.map((href, i) => [href, (i + 1) * 10]))
   if (menu === "footer-company") {
     for (const page of pages) if (page.order !== undefined && !designed.has(page.href)) designed.set(page.href, PAGE_ORDER_BASE + page.order)
   }
-  const mine = (rows ?? []).filter((row) => {
+  return designed
+}
+
+/** The rows that speak for a menu: those naming it in Slug, and those naming
+ *  none (or a menu there is not) whose Title names a page it was designed
+ *  with. A Link changes where a row goes, never which menus it is in. */
+function rowsFor(rows: readonly MenuRow[] | undefined, menu: MenuName, designed: Map<string, number>): MenuRow[] {
+  return (rows ?? []).filter((row) => {
     const named = menuName(row.menu)
-    // a row with a Link names its menu; a row naming no menu (or one there is
-    // not) is for every menu the page was designed for
-    if (row.link?.trim()) return named === menu
     return named ? named === menu : designed.has(menuHref(row.page)) && !row.menu?.trim()
   })
-  const ruled = new Set(mine.map(rowHref).filter((href): href is string => Boolean(href)))
+}
+
+/** A menu's addresses in order, before its room cuts them. */
+function orderedLinks(rows: readonly MenuRow[] | undefined, menu: MenuName, pages: readonly MenuPage[]): string[] {
+  const known = new Set([...DESIGNED_PAGES, ...pages.map((p) => p.href)])
+  const designed = designedFor(menu, pages)
+  const mine = rowsFor(rows, menu, designed)
+  // a row rules the page its Title names, and, with a Link, where it goes instead
+  const ruled = new Set<string>()
+  for (const row of mine) {
+    ruled.add(menuHref(row.page))
+    const href = rowHref(row)
+    if (href) ruled.add(href)
+  }
   const placed: { href: string; order: number; designed: number; age: string }[] = []
   for (const [href, order] of designed) if (!ruled.has(href)) placed.push({ href, order, designed: order, age: "" })
   for (const row of mine) {
     const href = rowHref(row)
-    // a Link is its own page; a Title must name one this site has
-    if (!row.on || !href || (!row.link?.trim() && !known.has(href)) || (row.link?.trim() && !row.page.trim())) continue
-    const own = designed.get(href)
+    const linked = Boolean(row.link?.trim())
+    // a Link goes where it says, with its Title as words; without one, the Title names a page this site has
+    if (!row.on || !href || (linked ? !row.page.trim() : !known.has(href))) continue
+    // a row takes the place of the page its Title names
+    const own = designed.get(menuHref(row.page)) ?? designed.get(href)
     placed.push({ href, order: row.order ?? own ?? Number.MAX_SAFE_INTEGER, designed: own ?? Number.MAX_SAFE_INTEGER, age: `${row.created ?? ""}${row.id}` })
   }
   placed.sort((a, b) => a.order - b.order || a.designed - b.designed || a.age.localeCompare(b.age))
@@ -163,24 +189,27 @@ export function menuLink(href: string, pages: readonly MenuPage[] = []): MenuLin
   return { href, name: pages.find((p) => p.href === href)?.title ?? href }
 }
 
-/** The words of the links a menu's rows give by address: its Title, by the
- *  address it goes to (the first row by Order, as the menu places it). */
-function rowWords(rows: readonly MenuRow[] | undefined, menu: MenuName): Map<string, string> {
-  const words = new Map<string, string>()
-  const linked = (rows ?? []).filter((row) => row.on && row.link?.trim() && row.page.trim() && menuName(row.menu) === menu)
-  for (const row of [...linked].sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER))) {
+/** The links a menu's rows with a Link give, by the address they go to (the
+ *  first row by Order, as the menu places it): the words of the page their
+ *  Title names (`shop`: its `nav.shop` slot), else their Title as written. */
+function linkedLinks(rows: readonly MenuRow[] | undefined, menu: MenuName, pages: readonly MenuPage[]): Map<string, MenuLink> {
+  const links = new Map<string, MenuLink>()
+  const linked = rowsFor(rows, menu, designedFor(menu, pages)).filter((row) => row.on && row.link?.trim() && row.page.trim())
+  for (const row of linked.sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER))) {
     const href = menuLinkHref(row.link as string)
-    if (href && !words.has(href)) words.set(href, row.page.trim())
+    if (!href || links.has(href)) continue
+    const page = menuHref(row.page)
+    links.set(href, DESIGNED_PAGES.has(page) ? { href, name: navItem(page).name, key: navKey(page) } : { href, name: row.page.trim() })
   }
-  return words
+  return links
 }
 
 /** Every menu as the site draws it. With no rows and no pages, the menus as
  *  designed. */
 export function siteMenus(rows?: readonly MenuRow[], pages: readonly MenuPage[] = []): SiteMenus {
   const links = (menu: MenuName) => {
-    const words = rowWords(rows, menu)
-    return menuLinks(rows, menu, pages).map((href) => (words.has(href) ? { href, name: words.get(href) as string } : menuLink(href, pages)))
+    const linked = linkedLinks(rows, menu, pages)
+    return menuLinks(rows, menu, pages).map((href) => linked.get(href) ?? menuLink(href, pages))
   }
   const header = links("header")
   const side = links("header-side")
@@ -196,7 +225,10 @@ export function menuProblem(row: MenuRow, pages: readonly MenuPage[] = []): stri
   if (row.link?.trim()) {
     if (!menuLinkHref(row.link)) return `"${row.link}" is not an address a link can go to: a Menu row's Link is a web address, an email or a path on this site`
     if (!row.page.trim()) return "a Menu row with a Link has no Title: its Title is the link's words"
-    if (!menuName(row.menu)) return `a Menu row with a Link names its menu in Slug (${MENU_NAMES.join(", ")}): "${row.page}" is placed nowhere`
+    if (row.menu?.trim() && !menuName(row.menu)) return `"${row.menu}" is not a menu (${MENU_NAMES.join(", ")}): the row is ignored`
+    if (!row.menu?.trim() && !Object.values(MENUS).some((m) => m.links.includes(menuHref(row.page)))) {
+      return `a Menu row with a Link names its menu in Slug (${MENU_NAMES.join(", ")}), unless its Title names a page in one: "${row.page}" is placed nowhere`
+    }
     return undefined
   }
   const href = menuHref(row.page)

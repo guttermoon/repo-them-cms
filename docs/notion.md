@@ -368,8 +368,8 @@ shows them a menu to a group, in the order the menu shows them.
 
 | Property | What it does |
 |---|---|
-| Title | The page the link goes to: a designed page (`features`, `pricing`, `blog`, `home`…) or a published Notion page's address (`guides/setup`). Its words are the page's `nav.<page>` slot, or the Notion page's title. With a Link, the link's words instead. |
-| Link | An address to go to instead of a page: another site (opened in a new tab), an email, or a path here. A row with a Link names its menu in Slug. |
+| Title | The page the link goes to: a designed page (`features`, `pricing`, `blog`, `home`…) or a published Notion page's address (`guides/setup`). Its words are the page's `nav.<page>` slot, or the Notion page's title. |
+| Link | An address to go to instead of the page Title names: another site (opened in a new tab), a Notion page, an email, or a path here. On a designed page's row (`shop`) the link takes that page's place and words; on a new row, Title is the link's words and Slug must name its menu. |
 | Slug | The menu: `header` (left of the mark), `header-side` (right of it), `footer-product`, `footer-company` or `footer-help`. Empty: every menu the page was designed for, so one row with no Slug, unticked, takes a page off every menu. |
 | Order | Its place, smallest first. The designed links stand at 10, 20, 30… so a row at 15 goes between the first two. No Order keeps a designed link where it was, and puts an added one last. |
 | Published | Ticked, the link shows; unticked, it is off that menu. |
@@ -392,11 +392,14 @@ menu leaves the phone's too. A footer column with no links left goes,
 heading and all (Help stays while Cookie settings is in it). A Notion page
 with an Order still joins the company column after its links, as before.
 
-A link out of the site is a row with a Link: the template's own demo has
-one in `footer-help`, Title "Report a bug", Link its GitHub issue forms. It
-is the database's, never the code's, so a copy's menus send nobody to
-somebody else's site; `notion:check` names a row with a Link it can't place
-(no Slug, no Title, or an address a browser must not follow).
+A link out of the site is a row with a Link. Put one on the `shop` row and
+the header's Shop goes to a shop on another platform, in Shop's place and
+under its words; unticked, Shop is off that menu as before. A new row adds
+a link of its own: the template's own demo has one in `footer-help`, Title
+"Report a bug", Link its GitHub issue forms. Either way it is the
+database's, never the code's, so a copy's menus send nobody to somebody
+else's site. `notion:check` names a row with a Link it can't place (no
+Title, no menu, or an address a browser must not follow).
 
 ### Authors
 
