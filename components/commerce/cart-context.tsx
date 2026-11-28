@@ -63,13 +63,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (touched.current) write(lines)
   }, [lines])
 
+  // the announcement waiting to be set: one at a time, the newest, and none
+  // left to fire once the cart has gone
+  const announcing = useRef<number | undefined>(undefined)
+  useEffect(() => () => window.clearTimeout(announcing.current), [])
+
   const change = useCallback((next: (lines: CartLine[]) => CartLine[], words?: string) => {
     touched.current = true
     setLines(next)
     // re-announce the same words: clear first, then set
     if (words) {
       setMessage("")
-      window.setTimeout(() => setMessage(words), 30)
+      window.clearTimeout(announcing.current)
+      announcing.current = window.setTimeout(() => setMessage(words), 30)
     }
   }, [])
 

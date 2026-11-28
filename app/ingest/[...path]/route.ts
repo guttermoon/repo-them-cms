@@ -36,6 +36,9 @@ export const dynamic = "force-dynamic"
  *  installed posthog-js sends. */
 const PASS_REQUEST = ["content-type", "content-encoding", "accept", "accept-language", "user-agent", "x-conversations-token"]
 
+/** The support chat's requests (posthog-js's conversations API). */
+const CHAT = /^api\/conversations\//
+
 /** PostHog, or a stand-in for testing end to end (lib/proxy.ts). */
 function hosts() {
   const posthog = standIn(process.env.POSTHOG_PROXY_UPSTREAM)
@@ -55,6 +58,12 @@ async function forward(request: NextRequest): Promise<Response> {
   const headers = pickHeaders(request.headers, PASS_REQUEST)
   const ip = shortenIp(request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip"))
   if (ip) headers.set("x-forwarded-for", ip)
+  // PostHog holds the support chat's messages to the widget's Allowed
+  // domains, read from Origin or Referer, and refuses one with neither
+  // ("Origin not allowed"). The reader's own never go on; the chat's
+  // requests carry this site's origin, the same for every reader, as Next
+  // has it for the request (the address /go/ resolves its paths against).
+  if (CHAT.test(path)) headers.set("origin", request.nextUrl.origin)
 
   return relay(async () =>
     fetch(`${target}${url.search}`, {

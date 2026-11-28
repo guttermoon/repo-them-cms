@@ -77,6 +77,37 @@ describe("buying a product", () => {
     expect(screen.getByRole("link", { name: "View the cart" })).toBeTruthy()
   })
 
+  test("the cart's announcement is the newest one, and none is left waiting once the cart has gone", () => {
+    vi.useFakeTimers()
+    const set = vi.spyOn(window, "setTimeout")
+    const clear = vi.spyOn(window, "clearTimeout")
+    // the cart's own timers: the words, set 30ms after they were cleared
+    const announcements = () => set.mock.calls.flatMap((call, i) => (call[1] === 30 ? [set.mock.results[i].value] : []))
+    try {
+      const { unmount } = render(
+        <CartProvider>
+          <AddToCart slug="drink" title="Drink" variants={PRODUCTS.drink.variants} action={{ kind: "cart" }} labels={ADD} />
+        </CartProvider>,
+      )
+      const add = screen.getByRole("button", { name: "Add to cart" })
+      act(() => {
+        fireEvent.click(add)
+        fireEvent.click(add)
+      })
+      const [first, second] = announcements()
+      expect(second, "each add announces").toBeDefined()
+      expect(clear, "the first add's words give way to the second's").toHaveBeenCalledWith(first)
+      act(() => vi.advanceTimersByTime(30))
+      expect(screen.getByRole("status").textContent).toBe("Added to the cart: 1 × Drink")
+
+      act(() => fireEvent.click(add))
+      unmount()
+      expect(clear, "a cart that has gone leaves no announcement to fire").toHaveBeenCalledWith(announcements().at(-1))
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   test("a quantity is held between 1 and 99", () => {
     render(<AddToCart slug="drink" title="Drink" variants={[]} action={{ kind: "cart" }} labels={ADD} />)
     const field = screen.getByLabelText("Quantity") as HTMLInputElement

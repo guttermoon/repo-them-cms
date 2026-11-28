@@ -821,8 +821,9 @@ in `next.config.mjs`.
   `tests/env-example.test.mjs` fails if the list and the code disagree.
 - **The rule:** `tests/no-secrets.test.mjs` reads every file git would
   commit. It fails on an email address other than the maker's public one or
-  an example, a token shape, an analytics ID, a real-looking Notion ID, or a
-  deployment's address. Two are public on purpose and named once in
+  an example, a token shape, an analytics ID, a PostHog project's number
+  (an example's is 12345), a real-looking Notion ID, or a deployment's
+  address. Two are public on purpose and named once in
   `lib/site.ts`: the Notion template (`NOTION_TEMPLATE_URL`) and the live
   demo (`DEMO_URL`), which only the README links.
   - **Why:** use example domains (`example.com`, `.example`) and
