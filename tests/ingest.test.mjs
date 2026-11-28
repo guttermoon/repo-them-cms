@@ -1,8 +1,10 @@
 // /ingest end to end (app/ingest/[...path]/route.ts): a request from
 // posthog-js goes through the route to a stand-in PostHog, which sees only
 // the headers the route names. The support chat's messages are the case in
-// point: they sign in with the project's public token in a header, and a
-// relay that drops it makes every message fail ("Failed to send message").
+// point: they sign in with the project's public token in a header, and
+// PostHog holds them to the widget's Allowed domains by their Origin; a
+// relay that drops either makes every message fail ("Failed to send
+// message").
 import { after, beforeEach, test } from "node:test"
 import assert from "node:assert/strict"
 
@@ -64,6 +66,7 @@ test("a chat message reaches PostHog with the chat's token, and nothing of the r
   assert.equal(sent.url, `${POSTHOG}/api/conversations/v1/widget/message`)
   assert.equal(sent.method, "POST")
   assert.equal(sent.headers.get("x-conversations-token"), "public-chat-token", "without it PostHog refuses the message")
+  assert.equal(sent.headers.get("origin"), "https://site.example", "PostHog checks a message's origin against the chat's Allowed domains")
   assert.equal(sent.headers.get("cookie"), null)
   assert.equal(sent.headers.get("referer"), null)
   assert.equal(sent.headers.get("x-forwarded-for"), "203.0.113.0", "only the shortened address")
@@ -80,6 +83,27 @@ test("the chat's tickets and messages are read through it the same way", async (
       ["/api/conversations/v1/widget/tickets?widget_session_id=w-1", "public-chat-token"],
       ["/api/conversations/v1/widget/messages/t-1?after=0", "public-chat-token"],
     ],
+  )
+})
+
+test("the chat's origin is always this site's, whatever the request claimed", async () => {
+  await route.POST(
+    fromBrowser("api/conversations/v1/widget/restore/request", {
+      method: "POST",
+      body: "{}",
+      headers: { "x-conversations-token": "public-chat-token", origin: "https://elsewhere.example" },
+    }),
+  )
+  assert.equal(asked[0].headers.get("origin"), "https://site.example")
+})
+
+test("nothing but the chat is given an origin", async () => {
+  for (const path of ["e/", "flags/?v=2", "s/"]) {
+    await route.POST(fromBrowser(path, { method: "POST", body: "{}", headers: { origin: "https://site.example" } }))
+  }
+  assert.deepEqual(
+    asked.map((a) => a.headers.get("origin")),
+    [null, null, null],
   )
 })
 

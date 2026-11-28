@@ -91,10 +91,12 @@ your domain.
   to PostHog's EU or US cloud with the IP address shortened (IPv4 to its
   /24, IPv6 to its first three groups).
 - It sends no cookies, no referrer, and never the full address. Besides
-  what any request carries (its type, language and browser), the one header
-  it passes is the support chat's public token, which PostHog gives every
-  browser and which names nobody: without it PostHog refuses the chat's
-  messages ("Failed to send message"). `tests/ingest.test.mjs` sends a chat
+  what any request carries (its type, language and browser), the support
+  chat's requests carry two things PostHog needs, neither naming anybody:
+  the chat's public token, which PostHog gives every browser, and this
+  site's own origin (`https://your-domain`), which PostHog checks against
+  the chat's **Allowed domains**. Without either, PostHog refuses every
+  message ("Failed to send message"). `tests/ingest.test.mjs` sends a chat
   message through and checks what arrives.
 - Only PostHog's own paths are forwarded, so `/ingest` is no open proxy.
 
@@ -180,6 +182,9 @@ For the chat, in **Support → Settings → In-app widget**:
   by email after they leave. The site never identifies anybody, so the form
   shows to every reader; an email given once is kept in their browser for
   the next chat, until a no to cookies deletes it.
+- **Allowed domains:** your site's own domain (`your-domain.com`), so the
+  chat's public token works on your site alone. The site sends its own
+  address with every chat request for PostHog to check.
 - **Identity verification:** leave it off. It is for sites where people
   log in, and this one has no accounts.
 - **"Survey by PostHog"** under it, which only PostHog's paid plans remove.
