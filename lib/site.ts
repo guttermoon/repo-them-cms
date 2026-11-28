@@ -87,12 +87,12 @@ export const NOTION_TEMPLATE_URL = "https://www.notion.so/4236f6ccb2c18175b890e0
 
 /**
  * The template's own live demo: this code, connected to the demo's
- * database, for the README to link. The one deployment's address the
- * repository names, public on purpose (tests/no-secrets.test.mjs allows it
- * and no other). The site never prints it: a copy's own address is its
- * SITE_URL.
+ * database, on the maker's domain, for the README to link. Public on
+ * purpose; were it a deployment's own address, tests/no-secrets.test.mjs
+ * would allow it and no other. The site never prints it: a copy's own
+ * address is its SITE_URL.
  */
-export const DEMO_URL = "https://repo-them.vercel.app"
+export const DEMO_URL = "https://repo-them.denot.app"
 
 /** The two settings the Deploy button asks for: the only ones a site needs.
  *  Vercel makes every setting the button names required, so anything

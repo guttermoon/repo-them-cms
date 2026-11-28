@@ -1,7 +1,7 @@
 # REPO THEM
 
 **A Notion-powered CMS.** A website you write in Notion:
-[see it live](https://repo-them.vercel.app), every word of it from one Notion
+[see it live](https://repo-them.denot.app), every word of it from one Notion
 database.
 
 [![CI](https://github.com/guttermoon/repo-them-cms/actions/workflows/ci.yml/badge.svg)](https://github.com/guttermoon/repo-them-cms/actions/workflows/ci.yml)
@@ -18,7 +18,7 @@ in to and no build to run, and the editor is the one you already use.
 REPO THEM is a Next.js site made to be forked. It's plain on purpose, like a
 tin with a label that says what's in it.
 
-<a href="https://repo-them.vercel.app"><picture>
+<a href="https://repo-them.denot.app"><picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/home-dark.webp">
   <img src="docs/images/home-light.webp" width="830" alt="The live demo's homepage: the name repo them over the words generic, on purpose; the headline everything you need, nothing you don't; a line about plain products and plain plans; and two buttons, Shop the shelf and See the plans">
 </picture></a>
