@@ -145,6 +145,31 @@ nothing else: no address, name, message or IP address. These come from your
 server, not a reader's browser, and are about the site working, not about
 the reader. Without the setting, nothing is sent.
 
+## PostHog's pop-ups and chat
+
+Anything you switch on in PostHog that draws on the page, a survey pop-up
+(CSAT, NPS) or the support chat, is drawn by PostHog's script, so it shows
+only to a reader who said yes to cookies. The site dresses it in its own
+look (`app/globals.css`): the card, the words, the buttons, the field, the
+focus ring, the corners, the shadow and the font are the site's tokens, so
+it follows the reader's look, dark, mono and rainbow included, whatever
+colours the survey was given in PostHog. `tests/posthog-widgets.test.mjs`
+reads which colours the installed posthog-js uses and fails on one with no
+token, so an update can't bring back PostHog's own.
+
+What stays PostHog's to set, on the survey itself (**Customization**):
+
+- **Where it opens:** Position. **Center** opens it in the middle of the
+  window. The site can't move it, since PostHog places it from inside its
+  own part of the page.
+- **Its words:** the question, the scale's labels and the thank-you.
+- **"Survey by PostHog"** under it, which only PostHog's paid plans remove.
+
+The Feedback button is different: the site draws it itself, and PostHog
+only keeps what it sends ([feedback](feedback.md)). It needs no yes to
+cookies, and it is the one to keep if you want every reader to have a way
+to reach you.
+
 ## What never leaves
 
 - **Query strings.** Every page address sent in an event loses its query

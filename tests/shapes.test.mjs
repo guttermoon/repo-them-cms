@@ -45,7 +45,10 @@ test("no corner outside the scale: no rounded-[…], no Tailwind sizes, no bare 
     }
     if (path.endsWith(".css")) {
       for (const [, value] of source.matchAll(/border-radius:\s*([^;]+);/g)) {
-        if (!/^var\(--r-(text|block|card|panel)\)$|^9999px$/.test(value.trim())) off.push(`${path}: border-radius: ${value}`)
+        // `!important` changes which rule wins, not the corner (PostHog's
+        // survey box, whose own corner is written on it inline)
+        const corner = value.trim().replace(/\s*!important$/, "")
+        if (!/^var\(--r-(text|block|card|panel)\)$|^9999px$/.test(corner)) off.push(`${path}: border-radius: ${value}`)
       }
     }
   }

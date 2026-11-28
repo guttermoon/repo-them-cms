@@ -427,6 +427,17 @@ in `next.config.mjs`.
   shortened and page addresses cleaned. Escape on the cookie question
   answers no.
   - **Why:** a dismissal is never permission.
+- **The rule:** what PostHog draws on the page after a yes (a survey
+  pop-up, the support chat) wears the site's tokens: `app/globals.css`
+  sets every colour, corner, shadow and font posthog-js reads
+  (`--ph-survey-*` on its `PostHogSurvey-<id>` box, with `!important` over
+  the survey's own appearance, and `--ph-conv-*` on the chat's container).
+  Where it opens and its words stay the survey's settings in PostHog.
+  `tests/posthog-widgets.test.mjs` reads the installed posthog-js for the
+  names, so an update that reads a new one fails until it has a token.
+  - **Why:** a pop-up in PostHog's grey and blue is the one thing on the
+    page that ignores the reader's look, and a colour typed into PostHog
+    escapes the contrast check.
 - **The rule:** a video loads its player only when the reader presses play.
 - **The rule:** Next's image optimiser is off (`images: { unoptimized:
   true }` in `next.config.mjs`, and no remote host), so `/_next/image`
