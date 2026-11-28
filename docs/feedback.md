@@ -36,7 +36,7 @@ Three keys, about ten minutes, and no terminal.
    build's log says what it made:
 
    ```
-   [posthog-setup] project "Default project" (#368290)
+   [posthog-setup] project "Default project" (#12345)
    [posthog-setup] survey "Site feedback" made and launched (0199…)
    [posthog-setup] flag site-feedback made, on for everyone
    [posthog-setup] session replay is off, so feedback cannot link to what the reader saw: …

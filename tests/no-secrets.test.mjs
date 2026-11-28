@@ -90,6 +90,12 @@ test("no analytics or tag manager ID but the tests' made-up ones and placeholder
   assert.deepEqual(found, [])
 })
 
+test("no PostHog project's own number: an example's is 12345", () => {
+  // as PostHog's addresses and the setup's log (lib/posthog-setup.ts) print it
+  const found = scan(/posthog\.com\/project\/(\d+)|project "[^"\n]*" \(#(\d+)\)|POSTHOG_PROJECT_ID=(\d+)/g, (match) => /(?<!\d)12345(?!\d)/.test(match))
+  assert.deepEqual(found, [])
+})
+
 test("no real-looking Notion ID: only made-up ones and public pages", () => {
   const PUBLIC = new Set([
     // Notion's brand guidelines, a public page the starter content links to
