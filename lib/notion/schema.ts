@@ -265,7 +265,7 @@ export const SCHEMA: {
   {
     name: PROPS.link,
     type: "url",
-    description: "Where a row's button goes: a resource's, a plan's or a logo's. Person: their profile. Review: where it was left. Products: an outside buy link (https). Redirects: the destination.",
+    description: "Where a row's button goes: a resource's, a plan's or a logo's. Person: their profile. Review: where it was left. Products: an outside buy link (https). Redirects: the destination. Menus: an address the link goes to instead of a page, its Title the words.",
   },
   {
     name: PROPS.font,

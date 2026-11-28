@@ -185,7 +185,7 @@ beside each property there too.
 | Author Bio | Text |  | Person: the line under their posts (empty: their Text). Quotes: who the speaker is. |
 | Team Page | Select |  | Person: On (the default, when empty) shows them on /team and /about. Off keeps them to the byline of the posts they write. Options: On, Off. |
 | Action | Select |  | Resources: the button's verb. Options: Read, Watch, Download, Link. |
-| Link | URL |  | Where a row's button goes: a resource's, a plan's or a logo's. Person: their profile. Review: where it was left. Products: an outside buy link (https). Redirects: the destination. |
+| Link | URL |  | Where a row's button goes: a resource's, a plan's or a logo's. Person: their profile. Review: where it was left. Products: an outside buy link (https). Redirects: the destination. Menus: an address the link goes to instead of a page, its Title the words. |
 | Font | Select |  | Pages and posts: Notion's three page styles. Options: Default, Serif, Mono. |
 | Full width | Checkbox |  | Pages and posts: use the full width, as Notion's page option does. |
 | Layout | Select |  | Pages: Article sets the body as a Notion page; Landing sets its top-level blocks as marketing sections (docs/sections.md). Options: Article, Landing. |
@@ -369,6 +369,7 @@ shows them a menu to a group, in the order the menu shows them.
 | Property | What it does |
 |---|---|
 | Title | The page the link goes to: a designed page (`features`, `pricing`, `blog`, `home`…) or a published Notion page's address (`guides/setup`). Its words are the page's `nav.<page>` slot, or the Notion page's title. |
+| Link | An address to go to instead of the page Title names: another site (opened in a new tab), a Notion page, an email, or a path here. On a designed page's row (`shop`) the link takes that page's place and words; on a new row, Title is the link's words and Slug must name its menu. |
 | Slug | The menu: `header` (left of the mark), `header-side` (right of it), `footer-product`, `footer-company` or `footer-help`. Empty: every menu the page was designed for, so one row with no Slug, unticked, takes a page off every menu. |
 | Order | Its place, smallest first. The designed links stand at 10, 20, 30… so a row at 15 goes between the first two. No Order keeps a designed link where it was, and puts an added one last. |
 | Published | Ticked, the link shows; unticked, it is off that menu. |
@@ -390,6 +391,15 @@ menu is every menu's links in turn, each once, so a page taken off every
 menu leaves the phone's too. A footer column with no links left goes,
 heading and all (Help stays while Cookie settings is in it). A Notion page
 with an Order still joins the company column after its links, as before.
+
+A link out of the site is a row with a Link. Put one on the `shop` row and
+the header's Shop goes to a shop on another platform, in Shop's place and
+under its words; unticked, Shop is off that menu as before. A new row adds
+a link of its own: the template's own demo has one in `footer-help`, Title
+"Report a bug", Link its GitHub issue forms. Either way it is the
+database's, never the code's, so a copy's menus send nobody to somebody
+else's site. `notion:check` names a row with a Link it can't place (no
+Title, no menu, or an address a browser must not follow).
 
 ### Authors
 

@@ -358,7 +358,7 @@ The **Kind** of a row says what it is. Nothing appears on the site until
 | Person | Somebody on `/team`, and the author of the posts that name them: Title the name, Description the role, Text a line about them, Image the portrait. Team Page Off keeps them to their posts |
 | Review | A review on the homepage: Title the name, Text what they said, Rating the stars (1 to 5), Published Date when, Image their photo |
 | Section | Where a section of a designed page goes: Title names it (`home.reviews`), Slug the page (`about`), Order its place. Unticked, it is off; two rows, it shows twice ([sections](docs/sections.md#sections-from-notion)) |
-| Menu | A link in the header or the footer: Title names the page (`pricing`, or a Notion page's address), Slug the menu (`header`, `header-side`, `footer-product`, `footer-company`, `footer-help`; empty, wherever it was designed), Order its place. Unticked, it is off that menu ([menus](docs/notion.md#menus)) |
+| Menu | A link in the header or the footer: Title names the page (`pricing`, or a Notion page's address), Slug the menu (`header`, `header-side`, `footer-product`, `footer-company`, `footer-help`; empty, wherever it was designed), Order its place. With a Link it goes to that address instead (on a new row, Title is its words). Unticked, it is off that menu ([menus](docs/notion.md#menus)) |
 
 **Pictures.**
 - **A post's or a page's cover** is its Notion cover: **Add cover**, then

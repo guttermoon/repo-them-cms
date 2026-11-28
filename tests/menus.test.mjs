@@ -6,7 +6,8 @@ import { test } from "node:test"
 import assert from "node:assert/strict"
 
 import { FOOTER_COLUMNS, MAIN_NAV, SIDE_NAV } from "../lib/nav.ts"
-import { MENU_NAMES, MENUS, menuHref, menuLink, menuLinks, menuName, menuOverflow, menuProblem, siteMenus } from "../lib/menus.ts"
+import { MENU_NAMES, MENUS, menuHref, menuLink, menuLinkHref, menuLinks, menuName, menuOverflow, menuProblem, siteMenus } from "../lib/menus.ts"
+import { SITE_URL } from "../lib/site.ts"
 import { readRow, readRows, publishedQuery } from "../lib/notion/rows.ts"
 import { checkRows } from "../lib/notion/check.ts"
 import { STARTER_DATA } from "../lib/demo/starter.ts"
@@ -120,6 +121,7 @@ const notionRow = (props) => ({
     Published: { type: "checkbox", checkbox: Boolean(props.published) },
     Slug: { type: "rich_text", rich_text: props.slug ? [rt(props.slug)] : [] },
     Order: { type: "number", number: props.order ?? null },
+    Link: { type: "url", url: props.link ?? null },
   },
 })
 
@@ -157,4 +159,80 @@ test("the starter's Menu rows are the menus as designed, one row for every link"
   assert.deepEqual(hrefs(starter.side), hrefs(designed.side))
   assert.deepEqual(starter.footer.map((c) => hrefs(c.links)), designed.footer.map((c) => hrefs(c.links)))
   assert.deepEqual(hrefs(starter.phone), hrefs(designed.phone))
+})
+
+// ── a row with a Link: a way out of the site, added from Notion ──
+
+const ISSUES = "https://github.example/owner/repo/issues/new/choose"
+
+test("a row with a Link adds it to the menu it names, its Title the words, in its place", () => {
+  const rows = [row("Report a bug", { link: ISSUES, menu: "footer-help", order: 50 })]
+  const help = siteMenus(rows).footer.find((c) => c.key === "help")
+  const designed = FOOTER_COLUMNS.find((c) => c.key === "help").items.map((i) => i.href)
+  assert.deepEqual(hrefs(help.links), [...designed, ISSUES])
+  assert.deepEqual(help.links.at(-1), { href: ISSUES, name: "Report a bug" }, "its words are the Title, with no slot behind them")
+  // by Order among the designed links (at 10, 20, 30…), and in no other menu
+  assert.deepEqual(menuLinks([row("Report a bug", { link: ISSUES, menu: "footer-help", order: 15 })], "footer-help").slice(0, 2), [designed[0], ISSUES])
+  for (const menu of MENU_NAMES.filter((m) => m !== "footer-help")) assert.ok(!menuLinks(rows, menu).includes(ISSUES), menu)
+  // the phone's menu has it too, once
+  assert.equal(siteMenus(rows).phone.filter((l) => l.href === ISSUES).length, 1)
+})
+
+test("a row with a Link is off unticked, and placed nowhere without a menu or words", () => {
+  for (const rows of [
+    [row("Report a bug", { link: ISSUES, menu: "footer-help", on: false })],
+    [row("Report a bug", { link: ISSUES })],
+    [row("Report a bug", { link: ISSUES, menu: "sidebar" })],
+    [row("", { link: ISSUES, menu: "footer-help" })],
+  ]) {
+    assert.ok(!siteMenus(rows).phone.some((l) => l.href === ISSUES), JSON.stringify(rows[0]))
+  }
+  assert.match(menuProblem(row("Report a bug", { link: ISSUES })), /names its menu in Slug/)
+  assert.match(menuProblem(row("", { link: ISSUES, menu: "footer-help" })), /has no Title: its Title is the link's words/)
+  assert.equal(menuProblem(row("Report a bug", { link: ISSUES, menu: "footer-help" })), undefined)
+})
+
+test("a Link goes through safeHref: a script is placed nowhere, this site's own address is a path", () => {
+  const script = [row("Click", { link: "javascript:alert(1)", menu: "footer-help" })]
+  assert.equal(menuLinkHref("javascript:alert(1)"), undefined)
+  assert.ok(!siteMenus(script).phone.some((l) => /script/i.test(l.href)))
+  assert.match(menuProblem(script[0]), /is not an address a link can go to/)
+  assert.equal(menuLinkHref(`${SITE_URL}/contact?type=problem`), "/contact?type=problem")
+  const own = siteMenus([row("Tell us", { link: `${SITE_URL}/contact?type=problem`, menu: "footer-help" })])
+  assert.ok(own.footer.find((c) => c.key === "help").links.some((l) => l.href === "/contact?type=problem" && l.name === "Tell us"))
+})
+
+test("a Menu row's Link is read from Notion, and notion:check names one it can't place", () => {
+  assert.deepEqual(readRow(notionRow({ title: "Report a bug", slug: "footer-help", order: 50, link: ISSUES, published: true })), {
+    menu: { id: "n1", page: "Report a bug", on: true, menu: "footer-help", link: ISSUES, order: 50, created: "2026-11-26T00:00:00.000Z" },
+  })
+  const { findings } = checkRows([notionRow({ id: "d", title: "Report a bug", link: ISSUES, published: true })])
+  assert.match(findings.map((f) => f.message).join("\n"), /Menu "Report a bug": a Menu row with a Link names its menu in Slug/)
+})
+
+test("a Link on a designed page's row takes that page's place and words, in the menus the row is for", () => {
+  const SHOP = "https://shop.example/"
+  // named in Slug: the header's Shop goes to the outside shop, and the footer keeps its own
+  const header = [row("shop", { link: SHOP, menu: "header" })]
+  assert.deepEqual(menuLinks(header, "header"), ["/features", "/pricing", SHOP, "/about"])
+  assert.deepEqual(siteMenus(header).header[2], { ...menuLink("/shop"), href: SHOP }, "its words are still Shop's slot")
+  assert.ok(menuLinks(header, "footer-product").includes("/shop"))
+  // unticked, it takes Shop off the header, as a row without a Link does
+  assert.deepEqual(menuLinks([{ ...header[0], on: false }], "header"), ["/features", "/pricing", "/about"])
+  // with no Slug, it is for every menu Shop was designed for
+  const everywhere = [row("shop", { link: SHOP })]
+  for (const menu of ["header", "footer-product"]) {
+    const links = menuLinks(everywhere, menu)
+    assert.ok(links.includes(SHOP) && !links.includes("/shop"), menu)
+  }
+  assert.equal(menuProblem(everywhere[0]), undefined)
+})
+
+test("a Link to a Notion page stays Notion's; a path Notion kept on its app is this site's", () => {
+  const page = "https://app.notion.com/p/0123456789abcdef0123456789abcdef"
+  assert.equal(menuLinkHref(page), page)
+  assert.equal(menuLinkHref("https://www.notion.so/Handbook-0123456789abcdef0123456789abcdef"), "https://www.notion.so/Handbook-0123456789abcdef0123456789abcdef")
+  assert.equal(menuLinkHref("https://app.notion.com/pricing"), "/pricing")
+  const help = siteMenus([row("Our handbook", { link: page, menu: "footer-help" })]).footer.find((c) => c.key === "help")
+  assert.deepEqual(help.links.at(-1), { href: page, name: "Our handbook" })
 })

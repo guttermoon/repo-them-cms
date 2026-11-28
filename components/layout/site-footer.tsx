@@ -98,7 +98,7 @@ export function SiteFooter({
               <ul className="mt-3 space-y-1.5">
                 {column.links.map((item) => (
                   <li key={item.href}>
-                    <Link href={item.href} className={linkClass}>
+                    <Link href={item.href} className={linkClass} {...outsideLink(item.href)}>
                       {item.key ? <T k={item.key}>{item.name}</T> : item.name}
                     </Link>
                   </li>
