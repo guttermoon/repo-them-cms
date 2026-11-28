@@ -91,4 +91,30 @@ describe("the footer's columns, as Notion's Menu rows have them", () => {
     footer(help, true)
     expect(within(screen.getByRole("navigation", { name: "Help" })).getByRole("button", { name: "Cookie settings" })).toBeTruthy()
   })
+
+  test("a row with a Link adds a way out of the site, named by its Title, opened in a new tab", () => {
+    const issues = "https://github.example/owner/repo/issues/new/choose"
+    const { container } = footer([row("Report a bug", { link: issues, menu: "footer-help", order: 50 })])
+    expect(column("Help")).toEqual(["Questions", "Resources", "Security", "Privacy", "Report a bug"])
+    const link = within(screen.getByRole("navigation", { name: "Help" })).getByRole("link", { name: "Report a bug" })
+    expect(link.getAttribute("href")).toBe(issues)
+    expect(link.getAttribute("target")).toBe("_blank")
+    expect(link.getAttribute("rel")).toBe("noopener noreferrer")
+    checkEverything(container, "footer with an outside link", ["/our-story"])
+  })
+})
+
+describe("an outside link from a Menu row in the header and the phone menu", () => {
+  test("opens in a new tab in both", async () => {
+    const user = userEvent.setup()
+    const out = "https://shop.example/store"
+    header([row("Our shop", { link: out, menu: "header-side", order: 1 })])
+    expect(sides().right).toEqual(["Our shop", "Blog"])
+    const inHeader = screen.getAllByRole("link", { name: "Our shop" })[0]
+    expect([inHeader.getAttribute("target"), inHeader.getAttribute("rel")]).toEqual(["_blank", "noopener noreferrer"])
+    await user.click(screen.getByRole("button", { name: "Menu" }))
+    const menu = await screen.findByRole("dialog", { name: "Menu" })
+    const inPhone = within(menu).getByRole("link", { name: "Our shop" })
+    expect([inPhone.getAttribute("href"), inPhone.getAttribute("target"), inPhone.getAttribute("rel")]).toEqual([out, "_blank", "noopener noreferrer"])
+  })
 })

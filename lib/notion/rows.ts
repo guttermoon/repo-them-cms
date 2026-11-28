@@ -544,7 +544,19 @@ export function readRow(
     if (!row.id) return null
     const menu = rowText(row, PROPS.slug).trim()
     const order = numberOf(row, PROPS.order)
-    return { menu: { id: row.id, page: title, on: published, ...(menu ? { menu } : {}), ...(order === undefined ? {} : { order }), ...(row.created_time ? { created: row.created_time } : {}) } }
+    // a Link goes there instead of a page, with the Title as its words
+    const link = urlOf(row, PROPS.link)?.trim()
+    return {
+      menu: {
+        id: row.id,
+        page: title,
+        on: published,
+        ...(menu ? { menu } : {}),
+        ...(link ? { link } : {}),
+        ...(order === undefined ? {} : { order }),
+        ...(row.created_time ? { created: row.created_time } : {}),
+      },
+    }
   }
   // anything else is on the site only while it is ticked
   if (!published || !row.id) return null

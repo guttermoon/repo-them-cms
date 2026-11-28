@@ -12,6 +12,12 @@
  * shows. A link with no row stays where it was designed, so a database with
  * no Menu rows has the menus as designed, and one row changes one link.
  *
+ * A row with a Link goes to that address instead of a page, and its Title is
+ * the link's words: a way out of the site (a demo's issue forms, a shop on
+ * another platform) that a copy adds from Notion, never one in the code. It
+ * names its menu in Slug. The address goes through `safeHref`, as every
+ * address a person typed does, and one on this site is drawn as its path.
+ *
  * The header holds as many links as it was designed for (four, then two),
  * so the row weighs the same either side of the mark; past that, the first
  * by Order show and notion:check names the rest. The phone's menu is every
@@ -21,7 +27,10 @@
  * Pure: the store hands in the rows (lib/notion/rows.ts reads them ticked or
  * not, as it does Section rows), and the layout draws the links.
  */
+import { safeHref } from "./inline-links"
 import { FOOTER_COLUMNS, INDEXED_PAGES, MAIN_NAV, navItem, navKey, SIDE_NAV } from "./nav"
+import { sitePathFromHref } from "./notion/links"
+import { SITE_URL } from "./site"
 
 /** The menus a Menu row's Slug can name. */
 export const MENU_NAMES = ["header", "header-side", "footer-product", "footer-company", "footer-help"] as const
@@ -49,8 +58,10 @@ export const MENUS: Record<MenuName, MenuDefault> = {
 /** A Menu row as the store keeps it, ticked or not. */
 export type MenuRow = {
   id: string
-  /** the row's Title: the page it places */
+  /** the row's Title: the page it places, or, with a Link, the link's words */
   page: string
+  /** the row's Link, as written: an address to go to instead of a page */
+  link?: string
   /** the row's Slug, as written: the menu it is in; empty, every menu the page was designed for */
   menu?: string
   /** the row's Order: its place in that menu */
@@ -89,6 +100,18 @@ export function menuHref(title: string): string {
 
 const DESIGNED_PAGES = new Set(INDEXED_PAGES.map((i) => i.href))
 
+/** Where a row with a Link goes: a path for this site's own address, the
+ *  address for another, nothing for one a browser must not follow. */
+export function menuLinkHref(link: string): string | undefined {
+  return safeHref(sitePathFromHref(link, SITE_URL) ?? link)
+}
+
+/** Where a row's link goes: its Link's address, else the page its Title
+ *  names. */
+function rowHref(row: MenuRow): string | undefined {
+  return row.link?.trim() ? menuLinkHref(row.link) : menuHref(row.page)
+}
+
 /** Pages pages-with-an-Order are placed after in the footer's company column. */
 const PAGE_ORDER_BASE = 1000
 
@@ -113,15 +136,18 @@ function orderedLinks(rows: readonly MenuRow[] | undefined, menu: MenuName, page
   }
   const mine = (rows ?? []).filter((row) => {
     const named = menuName(row.menu)
-    // a row naming no menu (or one there is not) is for every menu the page was designed for
+    // a row with a Link names its menu; a row naming no menu (or one there is
+    // not) is for every menu the page was designed for
+    if (row.link?.trim()) return named === menu
     return named ? named === menu : designed.has(menuHref(row.page)) && !row.menu?.trim()
   })
-  const ruled = new Set(mine.map((row) => menuHref(row.page)))
+  const ruled = new Set(mine.map(rowHref).filter((href): href is string => Boolean(href)))
   const placed: { href: string; order: number; designed: number; age: string }[] = []
   for (const [href, order] of designed) if (!ruled.has(href)) placed.push({ href, order, designed: order, age: "" })
   for (const row of mine) {
-    const href = menuHref(row.page)
-    if (!row.on || !known.has(href)) continue
+    const href = rowHref(row)
+    // a Link is its own page; a Title must name one this site has
+    if (!row.on || !href || (!row.link?.trim() && !known.has(href)) || (row.link?.trim() && !row.page.trim())) continue
     const own = designed.get(href)
     placed.push({ href, order: row.order ?? own ?? Number.MAX_SAFE_INTEGER, designed: own ?? Number.MAX_SAFE_INTEGER, age: `${row.created ?? ""}${row.id}` })
   }
@@ -137,10 +163,25 @@ export function menuLink(href: string, pages: readonly MenuPage[] = []): MenuLin
   return { href, name: pages.find((p) => p.href === href)?.title ?? href }
 }
 
+/** The words of the links a menu's rows give by address: its Title, by the
+ *  address it goes to (the first row by Order, as the menu places it). */
+function rowWords(rows: readonly MenuRow[] | undefined, menu: MenuName): Map<string, string> {
+  const words = new Map<string, string>()
+  const linked = (rows ?? []).filter((row) => row.on && row.link?.trim() && row.page.trim() && menuName(row.menu) === menu)
+  for (const row of [...linked].sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER))) {
+    const href = menuLinkHref(row.link as string)
+    if (href && !words.has(href)) words.set(href, row.page.trim())
+  }
+  return words
+}
+
 /** Every menu as the site draws it. With no rows and no pages, the menus as
  *  designed. */
 export function siteMenus(rows?: readonly MenuRow[], pages: readonly MenuPage[] = []): SiteMenus {
-  const links = (menu: MenuName) => menuLinks(rows, menu, pages).map((href) => menuLink(href, pages))
+  const links = (menu: MenuName) => {
+    const words = rowWords(rows, menu)
+    return menuLinks(rows, menu, pages).map((href) => (words.has(href) ? { href, name: words.get(href) as string } : menuLink(href, pages)))
+  }
   const header = links("header")
   const side = links("header-side")
   const footer = FOOTER_COLUMNS.map((c) => ({ key: c.key, heading: c.heading, links: links(`footer-${c.key}` as MenuName) }))
@@ -152,6 +193,12 @@ export function siteMenus(rows?: readonly MenuRow[], pages: readonly MenuPage[] 
 /** What notion:check says about a Menu row the site can't place as written,
  *  or nothing. */
 export function menuProblem(row: MenuRow, pages: readonly MenuPage[] = []): string | undefined {
+  if (row.link?.trim()) {
+    if (!menuLinkHref(row.link)) return `"${row.link}" is not an address a link can go to: a Menu row's Link is a web address, an email or a path on this site`
+    if (!row.page.trim()) return "a Menu row with a Link has no Title: its Title is the link's words"
+    if (!menuName(row.menu)) return `a Menu row with a Link names its menu in Slug (${MENU_NAMES.join(", ")}): "${row.page}" is placed nowhere`
+    return undefined
+  }
   const href = menuHref(row.page)
   const known = DESIGNED_PAGES.has(href) || pages.some((p) => p.href === href)
   if (!known) return `"${row.page}" is not a page on this site: a Menu row's Title names a designed page (features, pricing, blog…) or a published Notion page's address`

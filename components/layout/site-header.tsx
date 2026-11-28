@@ -86,6 +86,7 @@ export function SiteHeader({
             <Link
               key={item.href}
               href={item.href}
+              {...outsideLink(item.href)}
               aria-current={isHere(item.href) ? "page" : undefined}
               className={`flex min-h-[44px] items-center rounded-block px-3 text-body font-medium hover:bg-wash ${isHere(item.href) ? "bg-wash" : ""}`}
             >
@@ -104,7 +105,7 @@ export function SiteHeader({
 
   const links = (items: MenuLink[]) =>
     items.map((item) => (
-      <Link key={item.href} href={item.href} aria-current={isHere(item.href) ? "page" : undefined} className={link(isHere(item.href))}>
+      <Link key={item.href} href={item.href} {...outsideLink(item.href)} aria-current={isHere(item.href) ? "page" : undefined} className={link(isHere(item.href))}>
         {words(item)}
       </Link>
     ))
