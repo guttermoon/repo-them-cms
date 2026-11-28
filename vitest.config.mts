@@ -9,7 +9,10 @@ const here = (path: string) => fileURLToPath(new URL(path, import.meta.url))
  * node:test; `npm test` runs both.
  */
 export default defineConfig({
-  esbuild: { jsx: "automatic" },
+  // JSX through React's automatic runtime: tsconfig.json says "preserve",
+  // which is Next's to compile, and Vite's compiler (Oxc) would otherwise
+  // leave it as JSX and fail to parse it
+  oxc: { jsx: { runtime: "automatic" } },
   resolve: {
     alias: [
       { find: /^@\//, replacement: here("./") },

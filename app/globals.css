@@ -1073,6 +1073,49 @@ details[open] > summary .n-toggle-mark {
   transition: none !important;
 }
 
+/* PostHog's own widgets, in the site's look (docs/analytics.md, "PostHog's
+   pop-ups and chat"). posthog-js draws them only after a yes to cookies: a
+   survey pop-up in a box of its own (`PostHogSurvey-<id>`, its insides in a
+   shadow root) that reads these variables, written on the box inline from
+   the survey's appearance in PostHog, so only `!important` here outranks
+   them; and the support chat, which reads `--ph-conv-*`. Every value is one
+   of the site's tokens, so both follow the look the reader chose, and
+   tests/posthog-widgets.test.mjs holds every colour the library reads to
+   one. Where a pop-up stands is the survey's own setting in PostHog. */
+[class^="PostHogSurvey-"] {
+  --ph-survey-font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif !important;
+  --ph-survey-background-color: rgb(var(--c-card)) !important;
+  --ph-survey-text-primary-color: rgb(var(--c-ink)) !important;
+  --ph-survey-text-subtle-color: rgb(var(--c-sub)) !important;
+  --ph-survey-border-color: var(--c-line-strong) !important;
+  --ph-survey-border-radius: var(--r-panel) !important;
+  --ph-survey-box-shadow: var(--shadow-pop) !important;
+  --ph-survey-submit-button-color: rgb(var(--c-btn)) !important;
+  --ph-survey-submit-button-text-color: rgb(var(--c-btn-ink)) !important;
+  --ph-survey-rating-bg-color: rgb(var(--c-wash)) !important;
+  --ph-survey-rating-text-color: rgb(var(--c-ink)) !important;
+  --ph-survey-rating-active-bg-color: rgb(var(--c-btn)) !important;
+  --ph-survey-rating-active-text-color: rgb(var(--c-btn-ink)) !important;
+  --ph-survey-input-background: rgb(var(--c-page)) !important;
+  --ph-survey-input-text-color: rgb(var(--c-ink)) !important;
+  --ph-survey-outline-color: rgb(var(--c-accent)) !important;
+  --ph-survey-scrollbar-thumb-color: var(--c-line-strong) !important;
+  --ph-survey-scrollbar-track-color: rgb(var(--c-card)) !important;
+}
+#ph-conversations-widget-container {
+  --ph-conv-font: var(--font-sans), ui-sans-serif, system-ui, sans-serif !important;
+  --ph-conv-primary: rgb(var(--c-btn)) !important;
+  --ph-conv-on-primary: rgb(var(--c-btn-ink)) !important;
+  --ph-conv-bg: rgb(var(--c-card)) !important;
+  --ph-conv-surface: rgb(var(--c-wash)) !important;
+  --ph-conv-agent-bubble: rgb(var(--c-card)) !important;
+  --ph-conv-text: rgb(var(--c-ink)) !important;
+  --ph-conv-muted: rgb(var(--c-sub)) !important;
+  --ph-conv-border: var(--c-line-strong) !important;
+  --ph-conv-radius: var(--r-card) !important;
+  --ph-conv-window-shadow: var(--shadow-pop) !important;
+}
+
 /* Nothing moves for a reader who asked for less motion: whatever a
    component or a library animates, here it arrives at once. */
 @media (prefers-reduced-motion: reduce) {

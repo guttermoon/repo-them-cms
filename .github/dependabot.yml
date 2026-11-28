@@ -21,6 +21,9 @@ updates:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
 
+  # Every action is pinned to a commit, its version in a comment beside it
+  # (tests/workflows.test.mjs): Dependabot moves both, and a tag moved to
+  # other code changes nothing here until a person merges the update.
   - package-ecosystem: github-actions
     directory: /
     schedule:

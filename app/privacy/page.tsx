@@ -7,7 +7,7 @@ import { makeT, plainText } from "@/components/system/notion-text"
 import { Callout } from "@/components/ui/blocks"
 import { Frame, PageHeader } from "@/components/ui/page"
 import { Icon } from "@/components/ui/icon"
-import { POSTHOG_IN_EU, posthogCookieName } from "@/lib/analytics"
+import { POSTHOG_IN_EU, posthogChatStorageName, posthogCookieName } from "@/lib/analytics"
 import { GA_ON, POSTHOG_KEY, POSTHOG_ON } from "@/lib/analytics-config"
 import { CART_KEY } from "@/lib/commerce/cart"
 import { commerce, shopIsLive } from "@/lib/commerce/config"
@@ -98,6 +98,15 @@ export default async function PrivacyPage() {
               <T k="privacy.forms.feedback">
                 The Feedback button sends what you write, with the page you were on, the browser you use (its name and version), the look you had and the size of your window, to PostHog, which we use to read it. If you said
                 yes to cookies, it also sends which visit it came from, so we can see what went wrong. It never sends your address or your name.
+              </T>
+            </p>
+          ) : null}
+          {POSTHOG_ON ? (
+            <p className="n-block">
+              <T k="privacy.forms.chat">
+                If this site has a support chat, it is PostHog&apos;s, and it appears only after you say yes to cookies. It sends what you write, and the
+                email and name you give it, to PostHog, which we use to answer you, with the visit it came from. Your browser keeps the conversation so
+                you can pick it up again, and a no to cookies deletes it.
               </T>
             </p>
           ) : null}
@@ -230,6 +239,19 @@ export default async function PrivacyPage() {
                     </td>
                     <td>
                       <T k="privacy.table.year">Up to a year</T>
+                    </td>
+                  </tr>
+                ) : null}
+                {POSTHOG_ON && POSTHOG_KEY ? (
+                  <tr>
+                    <td>
+                      <code className="n-code-inline">{posthogChatStorageName(POSTHOG_KEY)}</code>
+                    </td>
+                    <td>
+                      <T k="privacy.table.chat">PostHog&apos;s support chat, if this site has one: the conversation you started, and the email and name you gave it, so you can carry on. Only after a yes, and a later no deletes it.</T>
+                    </td>
+                    <td>
+                      <T k="privacy.table.untilcleared">Until you clear it</T>
                     </td>
                   </tr>
                 ) : null}

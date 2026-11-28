@@ -54,7 +54,12 @@ site's owner chose. Report those to the service concerned.
   proposes dependency updates once they have been public for two weeks, which
   keeps a freshly compromised release out. It never proposes a new major
   version, so a framework's move to one (Next.js, React) arrives from the
-  template, made and tested by hand.
+  template, made and tested by hand. Every GitHub Action in the workflows is
+  pinned to a commit, not a tag, with its version beside it
+  (`actions/checkout@<commit> # v7.0.1`): a tag can be moved to other code,
+  a commit cannot, and the feedback loop's action holds your Anthropic key.
+  Dependabot proposes new commits for them the same way, monthly.
+  `tests/workflows.test.mjs` fails on an action named by tag.
 - **Share the rate limits across every server.** In Vercel: Storage →
   Marketplace → Upstash (Redis), then redeploy; it sets the variables
   itself. Without a shared store each server instance counts alone, which

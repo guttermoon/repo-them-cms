@@ -45,10 +45,13 @@ describe("a no after a yes", () => {
     document.cookie = `${name}=%7B%22distinct_id%22%3A%22abc%22%7D; path=/`
     document.cookie = "theme=dark; path=/"
     localStorage.setItem(name, '{"distinct_id":"abc"}')
+    // the support chat's own item: its conversation, and the email typed into it
+    localStorage.setItem("ph_conv_phc_testkey0000", '{"ticketId":"t1","userTraits":{"email":"reader@example.com"}}')
     localStorage.setItem("cart", "[]")
     forget("phc_testkey0000")
     expect(document.cookie).not.toContain(name)
     expect(localStorage.getItem(name)).toBeNull()
+    expect(localStorage.getItem("ph_conv_phc_testkey0000")).toBeNull()
     expect(document.cookie).toContain("theme=dark")
     expect(localStorage.getItem("cart")).toBe("[]")
   })

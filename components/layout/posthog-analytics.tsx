@@ -3,7 +3,7 @@
 import { useEffect } from "react"
 import type { PostHog } from "posthog-js"
 
-import { analyticsKey, posthogCookieName, PROXY_PATH, posthogOptions } from "@/lib/analytics"
+import { analyticsKey, posthogChatStorageName, posthogCookieName, PROXY_PATH, posthogOptions } from "@/lib/analytics"
 import { onConsentChange, readConsent } from "@/lib/consent"
 import { type FlagKey, flagValue } from "@/lib/flags"
 
@@ -15,7 +15,8 @@ import { type FlagKey, flagValue } from "@/lib/flags"
  *  - Yes: posthog-js is fetched as a chunk of its own and started, sending
  *    through this site's /ingest.
  *  - No, now or later: `opt_out_capturing()`, which stops the sending and
- *    deletes PostHog's cookie and identifier.
+ *    deletes PostHog's cookie and identifier, and the support chat leaves the
+ *    page with what it kept (`stop`, then `forget`).
  *  - Cookie settings reopens the question, which changes nothing until it is
  *    answered.
  */
@@ -37,6 +38,14 @@ function load(key: string): Promise<PostHog | null> {
       return null
     })
   return loading
+}
+
+/** A no while PostHog is running: it stops sending, and the support chat
+ *  leaves the page at once, deleting its conversation and the email typed
+ *  into it, which opting out alone leaves in place. */
+function stop(posthog: PostHog | null) {
+  posthog?.opt_out_capturing()
+  posthog?.conversations?.reset()
 }
 
 async function begin(key: string): Promise<PostHog | null> {
@@ -104,7 +113,8 @@ export async function postHogVisit(): Promise<{ distinctId: string; sessionId: s
 }
 
 /** Everything PostHog keeps in this browser under its project's name: its
- *  cookie, on the host and on the domain above it, and its stored copy. */
+ *  cookie, on the host and on the domain above it, its stored copy, and the
+ *  support chat's conversation with the email typed into it. */
 export function forget(key: string) {
   const name = posthogCookieName(key)
   const host = window.location.hostname
@@ -113,7 +123,7 @@ export function forget(key: string) {
   }
   for (const storage of [() => window.localStorage, () => window.sessionStorage]) {
     try {
-      storage().removeItem(name)
+      for (const item of [name, posthogChatStorageName(key)]) storage().removeItem(item)
     } catch {
       // storage switched off: nothing was kept there
     }
@@ -127,7 +137,7 @@ export function PostHogAnalytics() {
     if (readConsent() === "accepted") void begin(key)
     return onConsentChange((value) => {
       if (value === "accepted") void begin(key)
-      else if (value === "rejected" && loading) void loading.then((posthog) => posthog?.opt_out_capturing())
+      else if (value === "rejected" && loading) void loading.then(stop)
       // A no on a visit where PostHog never loaded (a yes on an earlier day,
       // the question reopened, then no): what that yes left is still in the
       // browser, and a no deletes it all the same.

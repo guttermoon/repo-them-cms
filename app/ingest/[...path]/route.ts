@@ -28,8 +28,13 @@ import { rateLimit } from "@/lib/rate-limit"
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
-/** Request headers PostHog uses. Everything else stays here. */
-const PASS_REQUEST = ["content-type", "content-encoding", "accept", "accept-language", "user-agent"]
+/** Request headers PostHog uses. Everything else stays here. The support
+ *  chat sends its project's public token as `x-conversations-token`, which
+ *  PostHog gives every browser in the project's settings and which names no
+ *  reader; without it PostHog refuses every message ("Failed to send
+ *  message"). tests/analytics.test.mjs holds this list to the headers the
+ *  installed posthog-js sends. */
+const PASS_REQUEST = ["content-type", "content-encoding", "accept", "accept-language", "user-agent", "x-conversations-token"]
 
 /** PostHog, or a stand-in for testing end to end (lib/proxy.ts). */
 function hosts() {

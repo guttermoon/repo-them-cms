@@ -64,6 +64,14 @@ export function posthogCookieName(key: string): string {
   return `ph_${key}_posthog`
 }
 
+/** What PostHog's support chat keeps in the browser after a yes, named in
+ *  the privacy notice: one item per project, `ph_conv_<its key>`, holding the
+ *  conversation a reader started and the name and email they typed into it.
+ *  PostHog's own opt-out leaves it, so a no deletes it here. */
+export function posthogChatStorageName(key: string): string {
+  return `ph_conv_${key}`
+}
+
 /** The options PostHog is started with: its defaults, and the things this
  *  site needs on top of them. */
 export function posthogOptions(apiHost: string = PROXY_PATH): Partial<PostHogConfig> {

@@ -1,7 +1,7 @@
 # Development
 
 Next.js 15 (app router), React 19, Tailwind 3 and TypeScript. Node 22.18 or
-newer.
+a newer 22, then 24, or 26 and on: the test runner supports no odd release.
 
 ## Getting started
 
@@ -181,6 +181,19 @@ npm run sharpness
 Each takes extra paths after the address, such as
 `npm run a11y -- http://localhost:3000 /about /blog/hello`. Point them at
 the stand-in Notion to check the pages written in Notion too.
+
+## Dependencies
+
+What runs when a reader asks for a page is in `dependencies`. What only
+builds or tests the site (Tailwind and its plugin, PostCSS, the linter, the
+test runner) is in `devDependencies`, so `npm audit --omit=dev` reads what a
+live site runs. Vercel installs both to build.
+
+`overrides.next.postcss` is `$postcss`: Next.js 15 pins an old PostCSS of
+its own, whose advisories are fixed only in Next 16, and this has it use the
+site's instead (`^8.5.34`). Take it out once Next is on a version that ships
+a fixed one. `tests/dependencies.test.mjs` holds both, and `npm audit`
+finds nothing, the test tools included.
 
 ## The repository's own page
 

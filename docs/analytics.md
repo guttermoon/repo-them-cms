@@ -60,7 +60,9 @@ and the contact form are until an email platform is:
   reader's browser (`site-consent` in localStorage).
 - **No, or Escape:** nothing loads. A no after a yes switches the tools off
   at once and deletes their cookies and stored identifiers, whether or not
-  the tool had loaded on that visit. (Escape pressed to close the menu or
+  the tool had loaded on that visit. PostHog's support chat leaves the page
+  too, and its conversation, with any email typed into it, is deleted from
+  the browser (`ph_conv_<key>`, which PostHog's own opt-out leaves). (Escape pressed to close the menu or
   a list is not an answer.)
 - **The two answers look exactly alike**: the same size, the same type,
   both filled as the main button. Yes comes first, as the question asks it
@@ -88,7 +90,12 @@ your domain.
 - The browser sends to `/ingest` on your site, and your server passes it on
   to PostHog's EU or US cloud with the IP address shortened (IPv4 to its
   /24, IPv6 to its first three groups).
-- It sends no cookies, no referrer, and never the full address.
+- It sends no cookies, no referrer, and never the full address. Besides
+  what any request carries (its type, language and browser), the one header
+  it passes is the support chat's public token, which PostHog gives every
+  browser and which names nobody: without it PostHog refuses the chat's
+  messages ("Failed to send message"). `tests/ingest.test.mjs` sends a chat
+  message through and checks what arrives.
 - Only PostHog's own paths are forwarded, so `/ingest` is no open proxy.
 
 **Google Analytics:**
@@ -144,6 +151,43 @@ mailing list accepts an address, with the enquiry type or the status and
 nothing else: no address, name, message or IP address. These come from your
 server, not a reader's browser, and are about the site working, not about
 the reader. Without the setting, nothing is sent.
+
+## PostHog's pop-ups and chat
+
+Anything you switch on in PostHog that draws on the page, a survey pop-up
+(CSAT, NPS) or the support chat, is drawn by PostHog's script, so it shows
+only to a reader who said yes to cookies. The site dresses it in its own
+look (`app/globals.css`): the card, the words, the buttons, the field, the
+focus ring, the corners, the shadow and the font are the site's tokens, so
+it follows the reader's look, dark, mono and rainbow included, whatever
+colours the survey was given in PostHog. `tests/posthog-widgets.test.mjs`
+reads which colours the installed posthog-js uses and fails on one with no
+token, so an update can't bring back PostHog's own.
+
+What stays PostHog's to set, on the survey itself (**Customization**):
+
+- **Where it opens:** Position. **Center** opens it in the middle of the
+  window. The site can't move it, since PostHog places it from inside its
+  own part of the page.
+- **Its words:** the question, the scale's labels and the thank-you.
+
+For the chat, in **Support → Settings → In-app widget**:
+
+- **Asking for an email:** turn on **Require email** (and **Collect name**,
+  if you want it). The chat then opens on a short form, "Before we
+  start...", and a reader gives their email before their first message. It
+  goes with the conversation to PostHog's Support inbox, so you can reply
+  by email after they leave. The site never identifies anybody, so the form
+  shows to every reader; an email given once is kept in their browser for
+  the next chat, until a no to cookies deletes it.
+- **Identity verification:** leave it off. It is for sites where people
+  log in, and this one has no accounts.
+- **"Survey by PostHog"** under it, which only PostHog's paid plans remove.
+
+The Feedback button is different: the site draws it itself, and PostHog
+only keeps what it sends ([feedback](feedback.md)). It needs no yes to
+cookies, and it is the one to keep if you want every reader to have a way
+to reach you.
 
 ## What never leaves
 
