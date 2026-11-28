@@ -3,7 +3,7 @@
 // app/ingest, components/layout/posthog-analytics.tsx).
 import { test } from "node:test"
 import assert from "node:assert/strict"
-import { readFileSync } from "node:fs"
+import { readdirSync, readFileSync } from "node:fs"
 import { createRequire } from "node:module"
 import { dirname, join } from "node:path"
 
@@ -200,6 +200,19 @@ test("only PostHog's own paths are forwarded, each to the right host", () => {
   for (const refused of ["", "admin/", "e/../../etc", "e/%2e%2e/", "https://evil.test/", "e/<x>"])
     assert.equal(posthogUpstreamFor(refused), null, refused)
   assert.equal(posthogUpstreamFor("e/", { ingest: "http://stand.in", assets: "http://stand.in" }), "http://stand.in/e/")
+})
+
+test("the proxy passes on every header posthog-js names on its own requests", () => {
+  const pass = read("app/ingest/[...path]/route.ts").match(/const PASS_REQUEST = \[([^\]]*)\]/)[1].toLowerCase()
+  const ROOT = new URL("..", import.meta.url).pathname
+  const dist = join(dirname(createRequire(join(ROOT, "package.json")).resolve("posthog-js/package.json")), "dist")
+  const named = new Set()
+  for (const file of readdirSync(dist).filter((f) => f.endsWith(".js"))) {
+    for (const [, name] of readFileSync(join(dist, file), "utf8").matchAll(/headers:\{"([A-Za-z0-9-]+)":/g)) named.add(name.toLowerCase())
+  }
+  // the support chat's token, at least: dropped, every message fails
+  assert.ok(named.has("x-conversations-token"), "posthog-js no longer sends the chat's token as a header: check how the chat signs in")
+  for (const name of named) assert.ok(pass.includes(`"${name}"`), `posthog-js sends ${name}, and the proxy drops it`)
 })
 
 test("the proxy passes on no cookies, no referrer and no full address", () => {

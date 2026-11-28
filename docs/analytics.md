@@ -90,7 +90,12 @@ your domain.
 - The browser sends to `/ingest` on your site, and your server passes it on
   to PostHog's EU or US cloud with the IP address shortened (IPv4 to its
   /24, IPv6 to its first three groups).
-- It sends no cookies, no referrer, and never the full address.
+- It sends no cookies, no referrer, and never the full address. Besides
+  what any request carries (its type, language and browser), the one header
+  it passes is the support chat's public token, which PostHog gives every
+  browser and which names nobody: without it PostHog refuses the chat's
+  messages ("Failed to send message"). `tests/ingest.test.mjs` sends a chat
+  message through and checks what arrives.
 - Only PostHog's own paths are forwarded, so `/ingest` is no open proxy.
 
 **Google Analytics:**
