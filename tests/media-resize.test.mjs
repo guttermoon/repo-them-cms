@@ -55,6 +55,8 @@ test("a picture that follows the page offers every width, and says how wide it i
 
 test("the picture a page opens on loads with the page; the site's own files are left as they are", () => {
   assert.equal(picture(MEDIA, "100vw", { eager: true }).loading, "eager")
+  assert.equal(picture(MEDIA, "100vw", { eager: true }).fetchPriority, "high", "and before anything else on the page")
+  assert.equal(picture(MEDIA, "100vw").fetchPriority, undefined, "a picture further down waits its turn")
   assert.deepEqual(picture("/demo/cover.png", "100vw"), { src: "/demo/cover.png", loading: "lazy", decoding: "async" })
 })
 

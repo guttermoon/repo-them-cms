@@ -65,6 +65,7 @@ export type PictureProps = {
   sizes?: string
   loading: "lazy" | "eager"
   decoding: "async"
+  fetchPriority?: "high"
 }
 
 /**
@@ -78,11 +79,13 @@ export type PictureProps = {
  * every width.
  *
  * Pictures load when they come near the screen (`loading="lazy"`) unless
- * `eager`, which is for the one picture a page opens on (a cover): that one
- * is fetched with the page.
+ * `eager`, which is for the one picture a page opens on (a cover, the
+ * blog's lead post): that one is fetched with the page and before anything
+ * else on it (`fetchpriority="high"`), since it is what a reader is
+ * waiting to see.
  */
 export function picture(src: string, shown: number | string, { eager = false }: { eager?: boolean } = {}): PictureProps {
-  const how = { loading: eager ? "eager" : "lazy", decoding: "async" } as const
+  const how = eager ? ({ loading: "eager", decoding: "async", fetchPriority: "high" } as const) : ({ loading: "lazy", decoding: "async" } as const)
   if (!resizable(src)) return { src, ...how }
   if (typeof shown === "number") {
     const widths = [...new Set([1, 2, 3].map((density) => mediaWidth(shown * density) ?? LARGEST))]

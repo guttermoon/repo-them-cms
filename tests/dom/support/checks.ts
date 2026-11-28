@@ -103,7 +103,14 @@ export function checkPictures(root: Element) {
       expect(img.getAttribute("srcset"), `a media picture with no srcset: ${snippet(img)}`).toMatch(/\?w=\d+ \d+[wx]/)
       expect(img.getAttribute("loading"), snippet(img)).toMatch(/^(lazy|eager)$/)
     }
+    // the picture a page opens on comes first: eager, and at high priority
+    if (img.getAttribute("loading") === "eager" && img.getAttribute("src")?.startsWith("/media/")) {
+      expect(img.getAttribute("fetchpriority"), `an eager picture not fetched first: ${snippet(img)}`).toBe("high")
+    }
   }
+  // one picture a page opens on: two at high priority would each slow the other
+  const first = [...root.querySelectorAll('img[fetchpriority="high"]')].filter((img) => !img.closest("[hidden], template"))
+  expect(first.length, `more than one picture fetched first: ${first.map(snippet).join(", ")}`).toBeLessThanOrEqual(1)
   for (const svg of root.querySelectorAll("svg")) {
     const named = svg.getAttribute("aria-label") || svg.querySelector("title") || svg.getAttribute("role") === "img"
     if (!named) expect(hidden(svg), snippet(svg)).toBe(true)

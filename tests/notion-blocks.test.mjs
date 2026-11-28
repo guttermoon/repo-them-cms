@@ -62,9 +62,18 @@ test("a file block keeps where its file is, never Notion's expiring address", as
     ],
   })
   const [img, ext] = await fetchBlockTree("root", list)
-  assert.deepEqual(img.image.media, { owner: "block", id: "img", field: "block", v: "2026-11-02T00:00:00.000Z" })
+  const { fileVersion } = await import("../lib/notion/rows.ts")
+  assert.deepEqual(img.image.media, { owner: "block", id: "img", field: "block", v: fileVersion("https://s3.example/x.png", "") })
   assert.ok(!JSON.stringify(img).includes("X-Amz"), "the signed address is dropped")
   assert.equal(ext.image.media.external, "https://pics.example/y.jpg")
+})
+
+test("a file block's address follows its file: not its caption, nor Notion's hourly signature", async () => {
+  const block = (edited, url) => ({ id: "img", type: "image", last_edited_time: edited, image: { type: "file", file: { url }, caption: [] } })
+  const read = async (raw) => (await fetchBlockTree("root", lister({ root: [raw] }).list))[0].image.media.v
+  const first = await read(block("2026-11-02T00:00:00.000Z", "https://s3.example/space/file-1/x.png?X-Amz-Signature=a"))
+  assert.equal(await read(block("2026-11-05T00:00:00.000Z", "https://s3.example/space/file-1/x.png?X-Amz-Signature=b")), first, "a caption edited and the address signed again: the same picture")
+  assert.notEqual(await read(block("2026-11-05T00:00:00.000Z", "https://s3.example/space/file-2/x.png?X-Amz-Signature=a")), first, "a new upload: a new address")
 })
 
 test("binned blocks are left out, and a page past the size limit stops there", async () => {
